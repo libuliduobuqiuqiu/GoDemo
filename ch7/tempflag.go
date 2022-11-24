@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"sort"
 	"sunrun/ch7/tempconv"
 )
 
@@ -32,15 +34,14 @@ func (f *fileContext) close() int {
 
 type tempFile struct {
 	length int
-	fileHandler
+	fileContext
 }
 
 func main() {
-	// names := []string{"linshukai", "zhangsan", "wangwu", "meisi", "cluo"}
-	// sort.Sort(StringSlice(names))
-	// fmt.Println(names)
-	// f := tempFile{length: 11, fileContext: fileContext{width: 12, height: 13}}
-	// fmt.Println(f.open())
-	// fmt.Println(f.close())
-
+	names := []string{"linshukai", "zhangsan", "wangwu", "meisi", "cluo"}
+	sort.Sort(StringSlice(names))
+	fmt.Println(names)
+	f := tempFile{length: 11, fileContext: fileContext{Width: 12, Height: 13}}
+	fmt.Println(f.open())
+	fmt.Println(f.close())
 }
