@@ -13,3 +13,8 @@ type Wheel struct {
 	Circle
 	Spokes int
 }
+
+type PointItem struct {
+	Z    int
+	Desc string
+}
