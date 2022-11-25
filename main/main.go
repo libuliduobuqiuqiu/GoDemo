@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oleiade/reflections"
 	"strings"
+	"sunrun/SqlxDemo"
 	"sunrun/public"
 )
 
@@ -75,10 +76,12 @@ func withResolveSelectFields(i interface{}, s ...string) []string {
 }
 
 func main() {
-	a := VirtualServer{}
-	fmt.Println(a)
+	//a := VirtualServer{}
+	//fmt.Println(a)
+	//
+	//t := withResolveSelectFields(a, "ID", "Name", "ProviderName", "DeviceGroupName", "DestAddress", "Port",
+	//	"Protocol", "Type", "ProjectID", "DeviceGroupID", "Availability", "State", "FullPath", "Remark")
+	//fmt.Println(t)
 
-	t := withResolveSelectFields(a, "ID", "Name", "ProviderName", "DeviceGroupName", "DestAddress", "Port",
-		"Protocol", "Type", "ProjectID", "DeviceGroupID", "Availability", "State", "FullPath", "Remark")
-	fmt.Println(t)
+	SqlxDemo.SimpleQueryRow()
 }
