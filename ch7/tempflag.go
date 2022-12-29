@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"sort"
 	"sunrun/ch7/tempconv"
 )
@@ -44,4 +47,15 @@ func main() {
 	f := tempFile{length: 11, fileContext: fileContext{Width: 12, Height: 13}}
 	fmt.Println(f.open())
 	fmt.Println(f.close())
+
+	var w io.Writer
+	fmt.Printf("%T\n", w)
+
+	w = os.Stdout
+	w.Write([]byte("hello\n"))
+	fmt.Printf("%T\n", w)
+
+	w = new(bytes.Buffer)
+	w.Write([]byte("hello\n"))
+	fmt.Printf("%T\n", w)
 }
