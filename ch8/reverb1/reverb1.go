@@ -40,6 +40,7 @@ func handleConn(c net.Conn) {
 }
 
 func echo(c net.Conn, shout string, delay time.Duration) {
+	fmt.Println("From: ", c.LocalAddr(), ", Content: ", shout)
 	fmt.Fprintln(c, "\t", strings.ToUpper(shout))
 	time.Sleep(delay)
 
