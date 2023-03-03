@@ -1,5 +1,5 @@
 # GoDemo
-Go 语言学习示例项目
+About Go Demo Project
 
 
 # 项目简介
