@@ -1,7 +1,3 @@
-# GoDemo
-About Go Demo Project
-
-
 # 项目简介
 
 本项目是一个关于 Go 语言圣经、Gin 框架以及 Go 日常使用模块的示例代码库。
