@@ -1,4 +1,4 @@
-package SqlxDemo
+package main
 
 import (
 	"database/sql/driver"

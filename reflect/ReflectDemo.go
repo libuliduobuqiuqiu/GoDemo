@@ -14,7 +14,7 @@ func (p *Person) Hello() {
 	p.Age += 1
 }
 
-func main() {
+func Reflect2() {
 	// 创建一个Person类型的指针对象p，并赋值为&Person{"Alice", 18}
 	p := &Person{"Alice", 18}
 
