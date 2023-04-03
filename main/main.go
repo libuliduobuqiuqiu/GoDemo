@@ -2,53 +2,36 @@ package main
 
 import (
 	"fmt"
+	"sunrun/reflect"
 )
 
-type info interface {
-	SayName() string
-	SayAge() int
+type ObjOperation interface{
+	GetOptions()map[string]string
 }
 
-type handle interface {
-	HandleInfo()
+type Man struct {
+	sex string
+	Person
 }
 
 type Person struct {
 	Name string
-	Age  int
+	Age int
+	Options map[string]string
 }
 
-func (p *Person) SayName() string {
-	return p.Name
+func (p *Person) GetOptions() map[string]string {
+	return p.Options
 }
 
-func (p *Person) SayAge() int {
-	return p.Age
+func (p *Person) SetOptions(o map[string]string){
+	p.Options = o
 }
 
-func (p *Person) SetName(n string) {
-	p.Name = n
-}
+func main (){
+	info := map[string]string{"zhangsan": "wangwu", "lisi":"zhaosi"}
+	p := &Person{"xjp", 12, info}
+	reflect.SkipNumField(p)
 
-func (p *Person) HandleInfo() {
-	fmt.Println("My Name is ", p.Name, "My Age is  ", p.Age)
-}
-
-func Hello() *Person {
-	fmt.Println("Hello,world")
-	return &Person{"zhangsna", 22}
-}
-
-func main() {
-	p2 := &Person{}
-	p2.SetName("lisi")
-	fmt.Println(p2.SayName())
-
-	a := map[string]func() interface{}{
-		"zhangsan": func() interface{} { return Hello() },
-	}
-
-	fmt.Println(a)
-	fmt.Println(a["zhangsan"]())
-
+	fmt.Println(p)
 }
