@@ -1,45 +1,75 @@
-package reflect
+package main
 
 import (
 	"fmt"
 	"reflect"
 )
 
+type Action interface {
+	Hello()
+}
+
 type Person struct {
 	Name string
 	Age  int
 }
 
+type Animal struct {
+	Kind string
+	Name string
+	Age  int
+}
+
 func (p *Person) Hello() {
-	p.Age += 1
+	word := fmt.Sprintf("My name is %s, %d years old, I'm a Person", p.Name, p.Age)
+	fmt.Println(word)
+}
+
+func (a *Animal) Hello() {
+	word := fmt.Sprintf("My name is %s, %d years old, I'm a %s", a.Name, a.Age, a.Kind)
+	fmt.Println(word)
+}
+
+func HandleReflect(r interface{}) (err error) {
+
+	t := reflect.TypeOf(r)
+	switch t.Kind() {
+	case reflect.Ptr:
+
+		v := reflect.ValueOf(r)
+		temp := v.Elem()
+
+		name := temp.FieldByName("Name")
+		if name.IsValid() && name.CanSet() && name.Kind() == reflect.String {
+			name.SetString(name.String() + "_flag")
+		}
+
+		hello := v.MethodByName("Hello")
+		if hello.IsValid() {
+			hello.Call(nil)
+		}
+		fmt.Println(v.String(), v.Interface().(*Person))
+	default:
+		fmt.Printf("不支持该%s类型对象操作", t.Kind())
+	}
+
+	return nil
 }
 
 func main() {
 	// 创建一个Person类型的指针对象p，并赋值为&Person{"Alice", 18}
 	p := &Person{"Alice", 18}
-
-	t := reflect.TypeOf(*p)
-	newP := reflect.New(t)
-	fmt.Println("newP Type: ", newP.Kind(), newP.Kind() == reflect.Ptr)
-
-	v := newP.Elem()
-	fmt.Println("v Type: ", v.Kind(), v.Kind() == reflect.Struct)
-
-	v2 := newP.Elem()
-	fmt.Println("v2 Type ", v2.Kind(), v2.Kind() == reflect.Struct)
-
-	// 打印v是否为指针类型
-	//fmt.Println("v is pointer:", v.Kind() == reflect.Ptr) // v is pointer: true
-	//// 获取v所指向值（即Person结构体）中名为name的字段f，并打印它所存储的字符串
-	f := v2.FieldByName("Name")
-	f.SetString("zhangsan")
-
-	f2 := v2.FieldByName("Age")
-	f2.SetInt(23)
-
-	fmt.Println(v.Type())
-	f3 := newP.MethodByName("Hello")
-	f3.Call(nil)
+	if err := HandleReflect(p); err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Println(p)
-	fmt.Println(v)
+
+	a := &Animal{"Lion", "king", 10}
+	if err := HandleReflect(a); err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(a)
+
 }

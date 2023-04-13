@@ -1,4 +1,4 @@
-package reflect
+package main
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func (s *MyStruct) Method2() {
 	fmt.Println("Method2")
 }
 
-func main() {
+func tmain() {
 	var s MyStruct
 	var i MyInterface = &s
 	fmt.Println(reflect.TypeOf(i).Implements(reflect.TypeOf((*MyInterface)(nil)).Elem()))
