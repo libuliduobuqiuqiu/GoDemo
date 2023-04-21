@@ -1,4 +1,4 @@
-package main
+package ReflectDemo
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ type Action interface {
 	Hello()
 }
 
-type Person struct {
+type SPerson struct {
 	Name string
 	Age  int
 }
@@ -20,8 +20,8 @@ type Animal struct {
 	Age  int
 }
 
-func (p *Person) Hello() {
-	word := fmt.Sprintf("My name is %s, %d years old, I'm a Person", p.Name, p.Age)
+func (p *SPerson) Hello() {
+	word := fmt.Sprintf("My name is %s, %d years old, I'm a SPerson", p.Name, p.Age)
 	fmt.Println(word)
 }
 
@@ -48,7 +48,7 @@ func HandleReflect(r interface{}) (err error) {
 		if hello.IsValid() {
 			hello.Call(nil)
 		}
-		fmt.Println(v.String(), v.Interface().(*Person))
+		fmt.Println(v.String(), v.Interface().(*SPerson))
 	default:
 		fmt.Printf("不支持该%s类型对象操作", t.Kind())
 	}
@@ -57,8 +57,8 @@ func HandleReflect(r interface{}) (err error) {
 }
 
 func main() {
-	// 创建一个Person类型的指针对象p，并赋值为&Person{"Alice", 18}
-	p := &Person{"Alice", 18}
+	// 创建一个SPerson类型的指针对象p，并赋值为&SPerson{"Alice", 18}
+	p := &SPerson{"Alice", 18}
 	if err := HandleReflect(p); err != nil {
 		fmt.Println(err)
 		return

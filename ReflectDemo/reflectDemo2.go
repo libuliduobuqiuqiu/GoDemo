@@ -1,12 +1,12 @@
-package reflect
+package ReflectDemo
 
 import (
 	"fmt"
 	"reflect"
 )
 
-type ObjOperation interface{
-	GetOptions()map[string]string
+type ObjOperation interface {
+	GetOptions() map[string]string
 }
 
 type Man struct {
@@ -15,8 +15,8 @@ type Man struct {
 }
 
 type Person struct {
-	Name string
-	Age int
+	Name    string
+	Age     int
 	Options map[string]string
 }
 
@@ -24,14 +24,13 @@ func (p *Person) GetOptions() map[string]string {
 	return p.Options
 }
 
-func (p *Person) SetOptions(o map[string]string){
+func (p *Person) SetOptions(o map[string]string) {
 	p.Options = o
 }
 
-func main (){
+func main() {
 
-
-	p := Person{Name:"zhangsan", Age: 22}
+	p := Person{Name: "zhangsan", Age: 22}
 	p.SetOptions(map[string]string{"address": "guangdong"})
 
 	m := Man{sex: "chengren", Person: p}
