@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-faker/faker/v4"
 	"github.com/jinzhu/configor"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -22,14 +23,14 @@ type DBConfig struct {
 }
 
 type Music struct {
-	ID        int    `gorm:"column:id"`
-	Author    string `gorm:"column:music_author"`
-	Name      string `gorm:"column:music_name"`
-	Album     string `gorm:"column:music_album"`
-	Time      string `gorm:"column:music_time"`
-	MusicType string `gorm:"column:music_type"`
-	Lyrics    string `gorm:"column:music_lyrics"`
-	Arranger  string `gorm:"column:music_arranger"`
+	ID        int    `gorm:"column:id" faker:"-"`
+	Author    string `gorm:"column:music_author" faker:"name"`
+	Name      string `gorm:"column:music_name" faker:"username"`
+	Album     string `gorm:"column:music_album" faker:"word"`
+	Time      string `gorm:"column:music_time" faker:"time"`
+	MusicType string `gorm:"column:music_type" faker:"title_male"`
+	Lyrics    string `gorm:"column:music_lyrics" faker:"word"`
+	Arranger  string `gorm:"column:music_arranger" faker:"word"`
 }
 
 func (m Music) TableName() string {
@@ -57,28 +58,50 @@ func initDB() (db *gorm.DB, err error) {
 	return
 }
 
+func queryRecords(db *gorm.DB) {
+
+	music := Music{}
+	db.First(&music)
+	fmt.Printf("%+v\n", music)
+
+	db.Take(&music)
+	fmt.Printf("%+v\n", music)
+
+	db.Last(&music)
+	fmt.Printf("%+v\n", music)
+
+}
+
+func insertRecord(db *gorm.DB) {
+
+	var musicList []*Music
+	for i := 0; i < 10; i++ {
+		tempMusic := Music{}
+		err := faker.FakeData(&tempMusic)
+		if err != nil {
+			log.Fatal(err.Error())
+			return
+		}
+		musicList = append(musicList, &tempMusic)
+	}
+
+	result := db.Create(musicList)
+	for _, m := range musicList {
+		fmt.Printf("%+v", m)
+	}
+	fmt.Println(result.Error, result.RowsAffected)
+
+}
+
 func main() {
 
 	db, err := initDB()
+	db = db.Debug()
+
 	if err != nil {
 		log.Fatalf(err.Error())
 		return
 	}
-
-	var musicList []Music
-	result := db.Find(&musicList)
-
-	if result.Error != nil {
-		log.Fatalf(result.Error.Error())
-		return
-	}
-
-	fmt.Println("music_music 总计： ", result.RowsAffected)
-
-	for _, music_item := range musicList {
-
-		fmt.Printf("%+v\n", music_item)
-
-	}
-
+	queryRecords(db)
+	insertRecord(db)
 }
