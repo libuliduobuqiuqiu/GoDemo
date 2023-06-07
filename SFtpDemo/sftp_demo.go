@@ -31,7 +31,7 @@ func sftp_connect(serverInfo *ServerConfig) {
 	}
 
 	config := &ssh.ClientConfig{
-		User: "admin",
+		User: serverInfo.UserName,
 		Auth: []ssh.AuthMethod{
 			ssh.KeyboardInteractive(keyboardInteractiveChallenge),
 			ssh.Password(serverInfo.PassWord),
