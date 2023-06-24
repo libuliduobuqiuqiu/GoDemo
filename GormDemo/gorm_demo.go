@@ -231,6 +231,7 @@ func advancedQueryRow(db *gorm.DB) {
 	fmt.Println(result.Error, result.RowsAffected)
 }
 
+// updateRow 更新操作
 func updateRow(db *gorm.DB) {
 	// Save会保存所有字段，即使字段是零值，如果保存的值没有主键，就会创建，否则则是更新指定记录
 	result := db.Save(&User{ID: "e8efff22-a497-4a88-be1e-5123eb23ff75", UserName: "zhangsan", Date: "2023-12-12"})
@@ -249,6 +250,60 @@ func updateRow(db *gorm.DB) {
 	fmt.Println(result.Error, result.RowsAffected)
 }
 
+func deleteRows(db *gorm.DB) {
+
+	// 指定匹配字段删除数据
+	result := db.Delete(&User{}, map[string]interface{}{"username": "NJrauTj"})
+	fmt.Println(result.Error, result.RowsAffected)
+
+	result = db.Delete(&User{}, "username = ?", "NJrauTj")
+	fmt.Println(result.Error, result.RowsAffected)
+
+	// Where指定字段匹配删除数据
+	result = db.Where("username = ? and phone_number = ?", "jXQKmPv", "574-821-9631").Delete(&User{})
+	fmt.Println(result.Error, result.RowsAffected)
+
+	// 批量删除的两种方式
+	result = db.Where("email like ?", "%.com%").Delete(&User{})
+	fmt.Println(result.Error, result.RowsAffected)
+
+	result = db.Delete(&User{}, "email like ?", "%.com%")
+	fmt.Println(result.Error, result.RowsAffected)
+}
+
+// execSQL 执行原生SQL语句
+func execSQL(db *gorm.DB) {
+
+	// 将查询SQL的结果映射到指定的单个变量中
+	var oneUser User
+	result := db.Raw("SELECT * FROM user LIMIT 1").Scan(&oneUser)
+	fmt.Println(oneUser)
+	fmt.Println(result.Error, result.RowsAffected)
+
+	// 将查询SQL的批量结果映射到列表中
+	var users []User
+	result = db.Raw("SELECT * FROM user").Scan(&users)
+	for _, user := range users {
+		fmt.Println(user)
+	}
+	fmt.Println(result.Error, result.RowsAffected)
+
+	var updateUser User
+	result = db.Raw("UPDATE users SET username = ? where id = ?", "toms jobs", "ab6f089b-3272-49b5-858f-a93ed5a43b4f").Scan(&updateUser)
+	fmt.Println(updateUser)
+	fmt.Println(result.Error, result.RowsAffected)
+
+	// 直接通过Exec函数执行Update操作，不返回任何查询结果？
+	result = db.Exec("UPDATE user SET username = ? where id = ?", "toms jobs", "ab6f089b-3272-49b5-858f-a93ed5a43b4f")
+	fmt.Println(result.Error, result.RowsAffected)
+
+	// DryRun模式，在不执行的情况下生成SQL及其参数，可以用于准备或测试的SQL
+	var tmpUsers []APIUser
+	stmt := db.Session(&gorm.Session{DryRun: true}).Model(&User{}).Find(&tmpUsers).Statement
+	fmt.Println(stmt.SQL.String())
+	fmt.Println(stmt.Vars)
+}
+
 func main() {
 
 	db, err := initDB()
@@ -258,5 +313,5 @@ func main() {
 		log.Fatalf(err.Error())
 		return
 	}
-	updateRow(db)
+	execSQL(db)
 }
