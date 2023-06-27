@@ -29,3 +29,4 @@
 `-- templates
 ```
 
+[![Security Status](https://www.murphysec.com/platform3/v31/badge/1672544835743072256.svg)](https://www.murphysec.com/console/report/1672543209410084864/1672544835743072256)
