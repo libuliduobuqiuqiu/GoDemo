@@ -1,17 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"math/rand"
-	"time"
+	"log"
+	"sunrun/GormDemo"
 )
 
 func main() {
 
-	s := "how old are you"
-	rand.Seed(time.Now().UnixNano())
-	for k, v := range s {
-		fmt.Println(k, v)
-		fmt.Println(rand.Intn(int(v)))
+	db, err := gormDemo.InitDB()
+	db = db.Debug()
+
+	if err != nil {
+		log.Fatalf(err.Error())
+		return
 	}
+	gormDemo.SelectCompanyRows(db)
 }

@@ -1,4 +1,4 @@
-package main
+package gormDemo
 
 import (
 	"fmt"
@@ -38,15 +38,17 @@ type DBConfig struct {
 }
 
 type User struct {
-	ID          string `gorm:"primaryKey,column:id" faker:"-"`
-	Email       string `gorm:"column:email" faker:"email"`
-	Password    string `gorm:"column:password" faker:"password"`
-	PhoneNumber string `gorm:"column:phone_number" faker:"phone_number"`
-	UserName    string `gorm:"column:username" faker:"username"`
-	FirstName   string `gorm:"first_name" faker:"first_name"`
-	LastName    string `gorm:"last_name" faker:"last_name"`
-	Century     string `gorm:"century" faker:"century"`
-	Date        string `gorm:"date" faker:"date"`
+	ID          string  `gorm:"primaryKey,column:id" faker:"-"`
+	Email       string  `gorm:"column:email" faker:"email"`
+	Password    string  `gorm:"column:password" faker:"password"`
+	PhoneNumber string  `gorm:"column:phone_number" faker:"phone_number"`
+	UserName    string  `gorm:"column:username" faker:"username"`
+	FirstName   string  `gorm:"first_name" faker:"first_name"`
+	LastName    string  `gorm:"last_name" faker:"last_name"`
+	Century     string  `gorm:"century" faker:"century"`
+	Date        string  `gorm:"date" faker:"date"`
+	CompanyID   string  `gorm:"column:company_code" faker:"-"`
+	Company     Company `gorm:"foreignKey:CompanyID;references:Code" faker:"-"`
 }
 
 func (u User) TableName() string {
@@ -58,7 +60,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-func initDB() (db *gorm.DB, err error) {
+func InitDB() (db *gorm.DB, err error) {
 	confPath := "conf.json"
 	if _, err = os.Stat(confPath); err != nil {
 		return
@@ -302,16 +304,4 @@ func execSQL(db *gorm.DB) {
 	stmt := db.Session(&gorm.Session{DryRun: true}).Model(&User{}).Find(&tmpUsers).Statement
 	fmt.Println(stmt.SQL.String())
 	fmt.Println(stmt.Vars)
-}
-
-func main() {
-
-	db, err := initDB()
-	db = db.Debug()
-
-	if err != nil {
-		log.Fatalf(err.Error())
-		return
-	}
-	execSQL(db)
 }
