@@ -55,21 +55,3 @@ func HandleReflect(r interface{}) (err error) {
 
 	return nil
 }
-
-func main() {
-	// 创建一个SPerson类型的指针对象p，并赋值为&SPerson{"Alice", 18}
-	p := &SPerson{"Alice", 18}
-	if err := HandleReflect(p); err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(p)
-
-	a := &Animal{"Lion", "king", 10}
-	if err := HandleReflect(a); err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(a)
-
-}

@@ -6,6 +6,7 @@ import (
 	"github.com/jlaffaye/ftp"
 	"log"
 	"os"
+	"time"
 )
 
 type FtpConfig struct {
@@ -33,8 +34,9 @@ func initFtpConn() (err error, ftpConn *ftp.ServerConn) {
 	}
 
 	ftpConfig := Config.Ftp
-	ftpConn, err = ftp.Dial(fmt.Sprintf("%s:%d", ftpConfig.Host, ftpConfig.Port))
+	ftpConn, err = ftp.Dial(fmt.Sprintf("%s:%d", ftpConfig.Host, ftpConfig.Port), ftp.DialWithDisabledEPSV(true))
 	if err != nil {
+		log.Fatal(err)
 		return
 	}
 
@@ -50,6 +52,7 @@ func main() {
 	err, ftpConn := initFtpConn()
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	uploadFtpPath := "/home/ftpuser"
@@ -70,30 +73,30 @@ func main() {
 
 	// 切换目录
 	fmt.Println("list.....")
-	err = ftpConn.ChangeDirToParent()
-	if err != nil {
-		log.Println(err)
-	}
+	//err = ftpConn.ChangeDirToParent()
+	//if err != nil {
+	//	log.Println(err)
+	//}
 
 	// 查看当前目录文件
-	//files, err := ftpConn.List(".")
-	//if err != nil {
-	//	log.Println(err.Error())
-	//}
-	//for _, file := range files {
-	//	fmt.Println(file.Name)
-	//}
+	files, err := ftpConn.List(".")
+	if err != nil {
+		log.Println(err.Error())
+	}
+	for _, file := range files {
+		fmt.Println(file.Name)
+	}
 
-	fmt.Println("Upload")
+	//fmt.Println("Upload")
 	// 上传文件
-	file, err := os.Open("conf.json")
+	file, err := os.Open("CHANGELOG.md")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	time.Sleep(10)
 	defer file.Close()
-
-	err = ftpConn.Stor(fmt.Sprintf("%s//conf.json", uploadFtpPath), file)
+	err = ftpConn.Stor(fmt.Sprintf("%s//CHANGELOG.md", uploadFtpPath), file)
 	if err != nil {
 		log.Fatal(err)
 	}
