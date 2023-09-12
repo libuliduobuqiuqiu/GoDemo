@@ -14,5 +14,5 @@ func main() {
 		log.Fatalf(err.Error())
 		return
 	}
-	gormDemo.SelectCompanyRows(db)
+	gormDemo.InsertRows(db) // 批量插入1000条数据
 }

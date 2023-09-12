@@ -101,10 +101,10 @@ func insertOneRow(db *gorm.DB) {
 
 }
 
-// insertRows 批量插入
-func insertRows(db *gorm.DB) {
+// InsertRows 批量插入
+func InsertRows(db *gorm.DB) {
 	var users []*User
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1000; i++ {
 		tmpUser := User{}
 		err := faker.FakeData(&tmpUser)
 		if err != nil {
