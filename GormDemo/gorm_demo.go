@@ -26,7 +26,9 @@ func printRecords(u []User, result *gorm.DB) {
 }
 
 type Config struct {
-	MysqlConfig DBConfig `json:"mysql"`
+	MysqlConfig    DBConfig `json:"Mysql"`
+	CompanyConfig  DBConfig `json:"Company"`
+	CompanyConfig2 DBConfig `json:"Company2"`
 }
 
 type DBConfig struct {
@@ -52,7 +54,7 @@ type User struct {
 }
 
 func (u User) TableName() string {
-	return "user"
+	return "users"
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
@@ -60,7 +62,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-func InitDB() (db *gorm.DB, err error) {
+func InitDB(flag string) (db *gorm.DB, err error) {
 	confPath := "conf.json"
 	if _, err = os.Stat(confPath); err != nil {
 		return
@@ -71,11 +73,22 @@ func InitDB() (db *gorm.DB, err error) {
 		return
 	}
 
-	// 新建Database Gorm连接
-	mysqlConfig := &config.MysqlConfig
+	var tmpConfig *DBConfig
+
+	switch flag {
+	case "mysql":
+		tmpConfig = &config.MysqlConfig
+	case "company":
+		tmpConfig = &config.CompanyConfig
+	case "company2":
+		tmpConfig = &config.CompanyConfig2
+	default:
+		return nil, fmt.Errorf("无法识别需要查询那个数据库")
+	}
+
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4",
-		mysqlConfig.Username, mysqlConfig.Password, mysqlConfig.Host,
-		mysqlConfig.Port, mysqlConfig.DBName)
+		tmpConfig.Username, tmpConfig.Password, tmpConfig.Host,
+		tmpConfig.Port, tmpConfig.DBName)
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	return
