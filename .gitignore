@@ -5,3 +5,5 @@
 company/
 
 conf.json
+
+main/main.go
