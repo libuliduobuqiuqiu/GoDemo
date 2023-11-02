@@ -1,0 +1,16 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	gormDemo "sunrun/GormDemo"
+)
+
+func GenRenameSQL() {
+	db, err := gormDemo.InitDB("company2")
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Init DB Failed: ", err))
+	}
+
+	gormDemo.GenerateSQL(db)
+}

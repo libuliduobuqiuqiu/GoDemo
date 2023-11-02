@@ -95,5 +95,5 @@ func print_person(wg *sync.WaitGroup) {
 }
 
 func main() {
-
+	GenRenameSQL()
 }

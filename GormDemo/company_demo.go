@@ -92,8 +92,8 @@ func GenerateSQL(db *gorm.DB) {
 
 	for _, t := range tables {
 		newTable := fmt.Sprintf("instance_ad_%s", t.Name)
-		// sql := fmt.Sprintf("RENAME TABLE `%s`.`%s` TO `%s`.`%s`;", "adops", t.Name, "adops", newTable)
-		sql := fmt.Sprintf("RENAME TABLE `%s`.`%s` TO `%s`.`%s`;", "adops", newTable, "adops", t.Name)
+		sql := fmt.Sprintf("RENAME TABLE `%s`.`%s` TO `%s`.`%s`;", "adops", t.Name, "adops", newTable)
+		// sql := fmt.Sprintf("RENAME TABLE `%s`.`%s` TO `%s`.`%s`;", "adops", newTable, "adops", t.Name)
 		fmt.Println(sql)
 	}
 
