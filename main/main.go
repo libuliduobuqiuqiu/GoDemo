@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sunrun/ConcurrencyDemo"
 	"sync"
 )
 
@@ -95,5 +96,5 @@ func print_person(wg *sync.WaitGroup) {
 }
 
 func main() {
-	GenRenameSQL()
+	ConcurrencyDemo.DeviceExecCommands()
 }
