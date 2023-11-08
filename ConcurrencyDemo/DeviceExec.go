@@ -37,3 +37,12 @@ func DeviceExecCommands() {
 	}
 	wg.Wait()
 }
+
+func GenPanic() {
+	panic("Test Panic Event.")
+}
+
+func PrintPanic() {
+	fmt.Println("Print Panic.....")
+	GenPanic()
+}

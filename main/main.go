@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sunrun/ConcurrencyDemo"
 	"sync"
 )
 
@@ -95,6 +94,26 @@ func print_person(wg *sync.WaitGroup) {
 	}
 }
 
+type Person struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+func printPerson() (p *Person, err error) {
+
+	execPerson(p)
+	return p, nil
+}
+
+func execPerson(p *Person) {
+	tmpP := &Person{
+		Name: "zhangsan",
+		Age:  22,
+	}
+	*p = *tmpP
+}
+
 func main() {
-	ConcurrencyDemo.DeviceExecCommands()
+
+	marshalMan()
 }
