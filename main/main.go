@@ -115,5 +115,5 @@ func execPerson(p *Person) {
 
 func main() {
 
-	marshalMan()
+	GenShowTableStructSQL()
 }

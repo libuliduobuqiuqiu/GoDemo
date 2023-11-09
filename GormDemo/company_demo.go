@@ -6,6 +6,7 @@ import (
 	"github.com/pborman/uuid"
 	"gorm.io/gorm"
 	"log"
+	"strings"
 )
 
 type Company struct {
@@ -17,6 +18,11 @@ type Company struct {
 type TableInfo struct {
 	Schema string `gorm:"column:TABLE_SCHEMA" faker:"-"`
 	Name   string `gorm:"column:TABLE_NAME" faker:"-"`
+}
+
+type TableStruct struct {
+	Field string `gorm:"column:Field"`
+	Type  string `gorm:"column:Type"`
 }
 
 func (t *TableInfo) TableName() string {
@@ -95,6 +101,27 @@ func GenerateSQL(db *gorm.DB) {
 		sql := fmt.Sprintf("RENAME TABLE `%s`.`%s` TO `%s`.`%s`;", "adops", t.Name, "adops", newTable)
 		// sql := fmt.Sprintf("RENAME TABLE `%s`.`%s` TO `%s`.`%s`;", "adops", newTable, "adops", t.Name)
 		fmt.Println(sql)
+	}
+
+}
+
+func ShowTableStruct(db *gorm.DB) {
+	var tables []TableInfo
+
+	result := db.Where(&TableInfo{Schema: "cmdb"}).Find(&tables)
+	if result.Error != nil {
+		fmt.Println(result.Error)
+	}
+
+	for _, t := range tables {
+
+		if strings.Contains(t.Name, "instance_ad_") {
+			// fmt.Println(t.Name)
+
+			sql := fmt.Sprintf("DESCRIBE %s", t.Name)
+			fmt.Println(sql)
+		}
+
 	}
 
 }

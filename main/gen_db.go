@@ -14,3 +14,11 @@ func GenRenameSQL() {
 
 	gormDemo.GenerateSQL(db)
 }
+
+func GenShowTableStructSQL() {
+	db, err := gormDemo.InitDB("company2")
+	if err != nil {
+		log.Fatal(err)
+	}
+	gormDemo.ShowTableStruct(db)
+}
