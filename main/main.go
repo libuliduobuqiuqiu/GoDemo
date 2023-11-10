@@ -116,4 +116,5 @@ func execPerson(p *Person) {
 func main() {
 
 	GenShowTableStructSQL()
+
 }

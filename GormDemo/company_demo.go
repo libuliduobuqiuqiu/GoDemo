@@ -105,7 +105,8 @@ func GenerateSQL(db *gorm.DB) {
 
 }
 
-func ShowTableStruct(db *gorm.DB) {
+// FilterADTable 筛选有关Adops的表
+func FilterADTable(db *gorm.DB) (tableNames []string) {
 	var tables []TableInfo
 
 	result := db.Where(&TableInfo{Schema: "cmdb"}).Find(&tables)
@@ -114,16 +115,31 @@ func ShowTableStruct(db *gorm.DB) {
 	}
 
 	for _, t := range tables {
-
 		if strings.Contains(t.Name, "instance_ad_") {
-			// fmt.Println(t.Name)
-
-			sql := fmt.Sprintf("DESCRIBE %s", t.Name)
-			fmt.Println(sql)
+			tableNames = append(tableNames, t.Name)
 		}
 
 	}
+	return
+}
 
+// FilterTableField 筛选表中符合条件类型的字段
+func FilterTableField(db *gorm.DB, tableName []string) {
+	for _, name := range tableName {
+		sql := fmt.Sprintf("DESCRIBE %s", name)
+		var tableFieldList []TableStruct
+		result := db.Raw(sql).Scan(&tableFieldList)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+
+		for _, field := range tableFieldList {
+			if !strings.Contains(field.Type, "char") && !strings.Contains(field.Type, "int") {
+				fmt.Println(name, field.Field, field.Type)
+			}
+		}
+
+	}
 }
 
 func ShowServiceVariables(db *gorm.DB) (mysqlConfig map[string]string) {

@@ -20,5 +20,11 @@ func GenShowTableStructSQL() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	gormDemo.ShowTableStruct(db)
+	tableNames := gormDemo.FilterADTable(db)
+
+	cmdbConnect, err := gormDemo.InitDB("company")
+	if err != nil {
+		log.Fatal(err)
+	}
+	gormDemo.FilterTableField(cmdbConnect, tableNames)
 }
