@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sunrun/GoSshDemo"
 	"sync"
 )
 
@@ -115,5 +116,7 @@ func execPerson(p *Person) {
 
 func main() {
 
-	GenShowTableStructSQL()
+	// GenShowTableStructSQL()
+	// ConcurrencyDemo.ConPro()
+	GoSshDemo.ExecServerCommand()
 }

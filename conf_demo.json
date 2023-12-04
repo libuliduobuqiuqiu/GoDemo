@@ -1,0 +1,27 @@
+{
+  "mysql": {
+    "username": "",
+    "password": "",
+    "host": "",
+    "prefix": "",
+    "port": 3306
+  },
+  "ftp": {
+    "username": "",
+    "password": "",
+    "port": 21,
+    "host": ""
+  },
+  "ssh": {
+    "username": "",
+    "password": "",
+    "port": 22,
+    "host": ""
+  },
+  "f5": {
+    "username": "",
+    "password": "",
+    "port": 22,
+    "host": ""
+  }
+}
