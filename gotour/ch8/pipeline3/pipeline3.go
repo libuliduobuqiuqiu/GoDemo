@@ -9,7 +9,7 @@ func counter(out chan<- int) {
 	close(out)
 }
 
-func squarer(out chan<- int, in chan<- int) {
+func squarer(out chan<- int, in <-chan int) {
 	for x := range in {
 		out <- x * x
 	}
