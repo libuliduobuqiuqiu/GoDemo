@@ -1,20 +1,12 @@
-package main
+package GoSshDemo
 
 import (
-	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"os"
+	"sunrun/ConfigParserDemo"
 )
 
-type ServerConfig struct {
-	Host     string `json:"host"`
-	UserName string `json:"username"`
-	PassWord string `json:"password"`
-	Port     int    `json:"port"`
-}
-
-func Connect(s *ServerConfig, cmd string) {
+func Connect(s ConfigParserDemo.BaseConfig, cmd string) {
 	// SSH连接信息
 	keyboardInteractiveChallenge := func(
 		user,
@@ -25,14 +17,14 @@ func Connect(s *ServerConfig, cmd string) {
 		if len(questions) == 0 {
 			return []string{}, nil
 		}
-		return []string{s.PassWord}, nil
+		return []string{s.Password}, nil
 	}
 
 	config := &ssh.ClientConfig{
-		User: s.UserName,
+		User: s.Username,
 		Auth: []ssh.AuthMethod{
 			ssh.KeyboardInteractive(keyboardInteractiveChallenge),
-			ssh.Password(s.PassWord),
+			ssh.Password(s.Password),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
@@ -63,30 +55,10 @@ func Connect(s *ServerConfig, cmd string) {
 	}
 }
 
-func main() {
-	config := make(map[string]ServerConfig)
-
-	confPath := "conf.json"
-	if _, err := os.Stat(confPath); err != nil {
-		fmt.Printf("Config File Error: %s", err)
-		return
-	}
-
-	content, err := os.ReadFile(confPath)
-	if err != nil {
-		fmt.Printf("Error Reading File: %s", err)
-		return
-	}
-
-	err = json.Unmarshal(content, &config)
-	if err != nil {
-		fmt.Printf("Error Unmarshal: %s", err)
-		return
-	}
-
-	if val, ok := config["F5"]; ok {
-		cmd := "tmsh list sys softwareddd;\nifconfig lo"
-		Connect(&val, cmd)
-	}
+func ExecF5Command() {
+	f5Config := ConfigParserDemo.GetGlobalConfig()
+	config := f5Config.F5Config
+	cmd := "tmsh list sys softwareddd;\nifconfig lo"
+	Connect(config, cmd)
 
 }

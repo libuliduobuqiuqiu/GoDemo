@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"sunrun/ConcurrencyDemo"
+	"sunrun/GoSshDemo"
 	"sync"
 )
 
@@ -100,7 +100,23 @@ type Person struct {
 	Age  int    `json:"age"`
 }
 
-func main() {
-	ConcurrencyDemo.ExecModel()
+func printPerson() (p *Person, err error) {
 
+	execPerson(p)
+	return p, nil
+}
+
+func execPerson(p *Person) {
+	tmpP := &Person{
+		Name: "zhangsan",
+		Age:  22,
+	}
+	*p = *tmpP
+}
+
+func main() {
+
+	// GenShowTableStructSQL()
+	// ConcurrencyDemo.ConPro()
+	GoSshDemo.ExecServerCommand()
 }
