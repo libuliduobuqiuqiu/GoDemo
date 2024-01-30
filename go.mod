@@ -12,8 +12,6 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/sftp v1.13.5
-	github.com/sirupsen/logrus v1.9.3
-	github.com/tidwall/gjson v1.14.4
 	golang.org/x/crypto v0.10.0
 	golang.org/x/net v0.11.0
 	gorm.io/driver/mysql v1.5.1
@@ -41,8 +39,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
-	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect
