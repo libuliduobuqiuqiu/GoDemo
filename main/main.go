@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type linshukaiFloat float64
@@ -35,4 +36,7 @@ func main() {
 
 	c := linshukaiFloat(b)
 	fmt.Println(c)
+
+	name := "Hello,world"
+	strings.LastIndex(name, "Hello")
 }
