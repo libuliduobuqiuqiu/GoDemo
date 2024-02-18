@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 )
 
 type linshukaiFloat float64
@@ -28,15 +27,28 @@ func get() (err error) {
 	return
 }
 
+func reverseList(l [10]*int) {
+	for i, j := 0, len(l)-1; i <= j; i, j = i+1, j-1 {
+		*l[i], *l[j] = *l[j], *l[i]
+	}
+}
+
+func reverseSlice(l []int) {
+	for i, j := 0, len(l)-1; i <= j; i, j = i+1, j-1 {
+		l[i], l[j] = l[j], l[i]
+	}
+}
+
+func changeList(data []string) {
+	data[0] = "zhaoyun"
+	fmt.Println(cap(data), len(data))
+	data = append(data, "zhangsan")
+	data[0] = "zhuangzi"
+}
+
 func main() {
-	// httpdemo.HandleHttpRequest()
-	a := linshukaiFloat(9.888)
-	fmt.Println(a)
-	b := float64(999.9)
-
-	c := linshukaiFloat(b)
-	fmt.Println(c)
-
-	name := "Hello,world"
-	strings.LastIndex(name, "Hello")
+	data := []string{"wangwu", "lisi"}
+	changeList(data)
+	fmt.Println(data)
+	// httpdemo.RequestHtml("https://books.studygolang.com/gopl-zh/ch5/ch5-02.html")
 }
