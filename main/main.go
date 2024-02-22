@@ -1,53 +1,41 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+	"time"
+)
 
-type PointerInterface interface {
-	AddX()
-	PrintX()
-}
+func getNum1(wg *sync.WaitGroup, ch <-chan int) {
+	defer wg.Done()
 
-type SubInterface interface {
-	SubX()
-}
-
-type Pointer struct {
-	X int
-	Y int
-}
-
-func (p *Pointer) AddX() {
-	p.X += 1
-}
-
-func (p *Pointer) SubX() {
-	p.X -= 1
-}
-
-func (p *Pointer) PrintX() {
-	fmt.Println(p.X)
-}
-
-func UsePointer(p PointerInterface) {
-	if tmp, ok := p.(*Pointer); ok {
-		tmp.Y += 1
+	for {
+		select {
+		case num := <-ch:
+			fmt.Println("getNum1", num)
+			return
+		case <-time.After(10 * time.Millisecond):
+			fmt.Println("TimeOut.")
+		}
 	}
 
-	if tmp, ok := p.(SubInterface); ok {
-		tmp.SubX()
-	}
+}
 
-	switch p.(type) {
-	case Pointer:
-		p.PrintX()
-	case SubInterface:
-		p.SubX()
-	}
+func getNum2(ch chan int) {
+	ch <- 3
+	num := <-ch
+	fmt.Println("getNum2", num)
+}
+
+func setNum(wg *sync.WaitGroup, ch chan<- int) {
+	defer wg.Done()
+	time.Sleep(20 * time.Millisecond)
+	ch <- 2
 }
 
 func main() {
-	p := &Pointer{X: 2}
-	UsePointer(p)
-	fmt.Println(p.Y)
-	fmt.Println(p.X)
+
+	ch := make(chan int)
+	getNum2(ch)
+	close(ch)
 }

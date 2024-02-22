@@ -90,6 +90,18 @@ Go语言和OOP编程?
   - 断言的类型是接口类型(断言检查成功后则是另外的接口值)
 5. 类型分支（基于接口值的动态类型）
 
+Goroutines和Channels：
+1. CSP并发编程模型
+2. Goroutines(并发的执行单元)
+3. Channels(Goroutines之间同步和通行的机制):
+  - 不带缓存的Channels(仅仅用于goroutines之间同步的消息事件，可以用空结构体作为channel的类型/bool、int同样可以)
+  - 串联的Channels（Pipeline）
+  - 单方向的Channel
+  - 带缓存的Channels
+4. 并发的循环（Sync.WaitGroup)
+5. 基于Select的多路复用
+6. 并发的退出
+
 
 
 Go的接口和其他面向对象编程语言类继承接口有什么区别？
