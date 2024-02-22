@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sunrun/goconcurrency"
 	"sync"
 	"time"
 )
@@ -34,8 +35,5 @@ func setNum(wg *sync.WaitGroup, ch chan<- int) {
 }
 
 func main() {
-
-	ch := make(chan int)
-	getNum2(ch)
-	close(ch)
+	goconcurrency.StartChat()
 }
