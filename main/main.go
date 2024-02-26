@@ -34,6 +34,20 @@ func setNum(wg *sync.WaitGroup, ch chan<- int) {
 	ch <- 2
 }
 
+var (
+	a = make(chan struct{}, 1)
+)
+
+func addA(num int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	a <- struct{}{}
+	fmt.Println(num)
+	time.Sleep(2 * time.Second)
+	<-a
+}
+
 func main() {
-	goconcurrency.StartChat()
+	// goconcurrency.StartChat()
+
+	goconcurrency.CountBalance()
 }
