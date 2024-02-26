@@ -109,4 +109,8 @@ Goroutines和Channels：
   - 避免使用变量（或者说是避免使用不安全的变量，对于类似Sync.Map并发安全的数据结构可以使用）
   - 避免从多个Goroutines访问变量；
   - 允许多个Goroutines访问变量，但是在同一时刻只允许一个goroutine访问(互斥)；
-2. 
+2. 互斥
+  - Channel
+  - sync.Mutex（互斥锁、Go不支持重入锁）
+  - sync.RWMutex（读写锁，允许只读操作并发执行，但是写操作完全互斥，“多读单写锁”）写锁，不可读写，读锁，不可写，可读；
+
