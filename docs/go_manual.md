@@ -113,4 +113,10 @@ Goroutines和Channels：
   - Channel
   - sync.Mutex（互斥锁、Go不支持重入锁）
   - sync.RWMutex（读写锁，允许只读操作并发执行，但是写操作完全互斥，“多读单写锁”）写锁，不可读写，读锁，不可写，可读；
+3. 竞争条件检测（编译时补充-race参数）
+4. Goroutines 和 线程
+  - 内存占用
+  - 创建和销毁
+  - 切换
 
+Goroutines调度?
