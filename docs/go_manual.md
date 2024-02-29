@@ -152,4 +152,11 @@ Go Modules工作机制？
 
 测试：
 - go test（所有命名为*_test.go的文件：测试函数、基准测试函数、示例函数）
+- 测试函数（命名Test为开头，可选的后缀名也必须以大写字母开头，导入testing包）
+- 白盒测试(根据软件内部逻辑和结构设计测试用例)、黑盒测试(测试公开的文档和API行为)
+- 测试覆盖率
+- 基准测试(测定一个程序在固定的工作负载下的性能，命名为Benchmark为前缀名，导入testing.B, go test -bench)
+- 剖析（go test开启标志参数生成各种分析文件-cpuprofile/-blockprofile/-memprofile）
+- 示例函数（命名Example为开头, 没有函数参数和返回值)
+
 

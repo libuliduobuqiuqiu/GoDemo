@@ -25,3 +25,19 @@ func TestPalindrom(t *testing.T) {
 		t.Errorf("Error Function: %s", b)
 	}
 }
+
+func BenchmarkIsPalindrom(t *testing.B) {
+	for i := 0; i < 10000; i++ {
+		if !IsPalindrom("ababa") {
+			t.Errorf("Error Function: %s", "ababa")
+		}
+	}
+}
+
+func TestCountLength(t *testing.T) {
+	a := "zhangsan"
+
+	if len(a) < 10 {
+		t.Errorf("Error String length: %d", len(a))
+	}
+}
