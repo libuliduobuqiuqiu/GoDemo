@@ -151,12 +151,23 @@ Go Modules工作机制？
 ### 测试
 
 测试：
-- go test（所有命名为*_test.go的文件：测试函数、基准测试函数、示例函数）
-- 测试函数（命名Test为开头，可选的后缀名也必须以大写字母开头，导入testing包）
-- 白盒测试(根据软件内部逻辑和结构设计测试用例)、黑盒测试(测试公开的文档和API行为)
-- 测试覆盖率
-- 基准测试(测定一个程序在固定的工作负载下的性能，命名为Benchmark为前缀名，导入testing.B, go test -bench)
-- 剖析（go test开启标志参数生成各种分析文件-cpuprofile/-blockprofile/-memprofile）
-- 示例函数（命名Example为开头, 没有函数参数和返回值)
+1. go test（所有命名为*_test.go的文件：测试函数、基准测试函数、示例函数）
+2. 测试函数（命名Test为开头，可选的后缀名也必须以大写字母开头，导入testing包）
+3. 白盒测试(根据软件内部逻辑和结构设计测试用例)、黑盒测试(测试公开的文档和API行为)
+4. 测试覆盖率
+5. 基准测试(测定一个程序在固定的工作负载下的性能，命名为Benchmark为前缀名，导入testing.B, go test -bench)
+6. 剖析（go test开启标志参数生成各种分析文件-cpuprofile/-blockprofile/-memprofile）
+7. 示例函数（命名Example为开头, 没有函数参数和返回值)
 
+### 反射
 
+反射：
+1. Reflect的使用场景（程序在运行期间能够动态修改变量的值、调用函数和方法，并且可以创建新的数据类型和变量）
+2. reflect.Type 和 reflect.Value
+3. 通过reflect.Value 修改值
+4. 获取结构体标签
+5. 显示一个类型的方法集（NumMethod())
+
+TypeOf 和 ValueOf
+- TypeOf 返回传入interface对应的反射类型
+- ValueOf 返回一个新的Value，初始化为传入interface的实际值

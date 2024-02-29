@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"sunrun/goconcurrency"
+	"sunrun/gomanual/reflectdemo"
 	"sync"
 	"time"
 )
@@ -46,8 +46,19 @@ func addA(num int, wg *sync.WaitGroup) {
 	<-a
 }
 
+type Node struct {
+	IP string `json:"node"`
+}
+
 func main() {
 	// goconcurrency.StartChat()
 
-	goconcurrency.CountBalance()
+	// goconcurrency.CountBalance()
+
+	reflectdemo.ReflectPersonInfo(reflectdemo.HelloPersonInfo)
+	node := Node{IP: "localhost"}
+	P := reflectdemo.PersonInfo{Name: "linshukai", Age: 22}
+	reflectdemo.ReflectPersonInfo(node)
+
+	reflectdemo.SelectStructMethod(&P)
 }
