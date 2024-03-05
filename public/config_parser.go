@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const ConfigPath = "conf.json"
+const ConfigPath = "../conf.json"
 
 type GlobalConfig struct {
 	SSHConfig      BaseConfig  `json:"ssh"`

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"sunrun/gomanual/reflectdemo"
+	// "sunrun/gostorage/standardmysql"
 	"sync"
 	"time"
 )
@@ -51,14 +51,20 @@ type Node struct {
 }
 
 func main() {
+	// 启动聊天室
 	// goconcurrency.StartChat()
 
 	// goconcurrency.CountBalance()
 
-	reflectdemo.ReflectPersonInfo(reflectdemo.HelloPersonInfo)
-	node := Node{IP: "localhost"}
-	P := reflectdemo.PersonInfo{Name: "linshukai", Age: 22}
-	reflectdemo.ReflectPersonInfo(node)
-
-	reflectdemo.SelectStructMethod(&P)
+	// 测试使用内置sql引擎执行mysql语句
+	// standardmysql.ExecSQLStr()
+Out:
+	for i := 0; i < 10; i++ {
+		for j := 0; j < 10; j++ {
+			if j > 3 {
+				continue Out
+			}
+			fmt.Println(i, j)
+		}
+	}
 }
