@@ -9,6 +9,15 @@ import (
 	"sunrun/public"
 )
 
+func GetDB(config public.MysqlConfig) (db *sql.DB, err error) {
+	db, err = sql.Open("mysql",
+		fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", config.Username, config.Password, config.Host, config.Port, config.Prefix))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
+
 func ExecSQLStr() {
 	globalConfig := public.GetGlobalConfig()
 	mysqlConfig := globalConfig.MysqlConfig

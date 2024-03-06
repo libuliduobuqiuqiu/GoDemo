@@ -2,7 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sunrun/gomanual/reflectdemo"
+	"sunrun/gostorage/standardmysql"
+	"sunrun/public"
+
 	// "sunrun/gostorage/standardmysql"
 	"sync"
 	"time"
@@ -60,6 +64,19 @@ func main() {
 	// 测试使用内置sql引擎执行mysql语句
 	// standardmysql.ExecSQLStr()
 
-	d := reflectdemo.Device{}
-	reflectdemo.ReflectMysqlVar(d)
+	d := reflectdemo.Device{Name: "zhangsan", Address: "127.0.0.1", Port: 8080}
+	sql, sqlValues, err := reflectdemo.GenerateMysqlString(&d)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(sql)
+
+	globalConfig := public.GetGlobalConfig()
+	db, err := standardmysql.GetDB(globalConfig.MysqlConfig)
+
+	_, err = db.Exec(sql, sqlValues...)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
