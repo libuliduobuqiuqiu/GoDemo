@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sunrun/goconcurrency"
-	methoddemo "sunrun/gomanual/methodDemo"
+	"sunrun/golib/regexdemo"
 	"sunrun/gomanual/reflectdemo"
 	"sunrun/gostorage/standardmysql"
 	"sunrun/public"
@@ -37,5 +37,6 @@ func insertSqlByReflect() {
 }
 
 func main() {
-	methoddemo.MethodUseDiffReceiver()
+	// methoddemo.MethodUseDiffReceiver()
+	regexdemo.InterpreteDataGroup()
 }
