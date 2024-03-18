@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
-	"sunrun/godemo"
+	"sunrun/internal/godemo"
 	"time"
 )
 

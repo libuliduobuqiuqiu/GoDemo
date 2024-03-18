@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 	"sort"
-	"sunrun/gotour/ch7/tempconv"
+	"sunrun/internal/gotour/ch7/tempconv"
 )
 
 var temp = tempconv.CelsiusFlag("temp", 20.0, "the temprature")

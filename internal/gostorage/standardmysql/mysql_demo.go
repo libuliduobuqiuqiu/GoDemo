@@ -6,10 +6,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"strings"
-	"sunrun/public"
+	"sunrun/pkg"
 )
 
-func GetDB(config public.MysqlConfig) (db *sql.DB, err error) {
+func GetDB(config pkg.MysqlConfig) (db *sql.DB, err error) {
 	db, err = sql.Open("mysql",
 		fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", config.Username, config.Password, config.Host, config.Port, config.Prefix))
 	if err != nil {
@@ -19,7 +19,7 @@ func GetDB(config public.MysqlConfig) (db *sql.DB, err error) {
 }
 
 func ExecSQLStr() {
-	globalConfig := public.GetGlobalConfig()
+	globalConfig := pkg.GetGlobalConfig()
 	mysqlConfig := globalConfig.MysqlConfig
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",

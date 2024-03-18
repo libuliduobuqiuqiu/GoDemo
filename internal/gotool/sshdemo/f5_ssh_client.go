@@ -3,10 +3,10 @@ package sshdemo
 import (
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"sunrun/public"
+	"sunrun/pkg"
 )
 
-func Connect(s public.BaseConfig, cmd string) {
+func Connect(s pkg.BaseConfig, cmd string) {
 	// SSH连接信息
 	keyboardInteractiveChallenge := func(
 		user,
@@ -56,7 +56,7 @@ func Connect(s public.BaseConfig, cmd string) {
 }
 
 func ExecF5Command() {
-	f5Config := public.GetGlobalConfig()
+	f5Config := pkg.GetGlobalConfig()
 	config := f5Config.F5Config
 	cmd := "tmsh list sys softwareddd;\nifconfig lo"
 	Connect(config, cmd)

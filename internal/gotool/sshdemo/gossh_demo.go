@@ -5,12 +5,12 @@ import (
 	"fmt"
 	gossh "golang.org/x/crypto/ssh"
 	"log"
-	"sunrun/public"
+	"sunrun/pkg"
 )
 
 func ExecServerCommand() {
 
-	globalConfig := public.GetGlobalConfig()
+	globalConfig := pkg.GetGlobalConfig()
 	config := globalConfig.SSHConfig
 
 	clientConfig := &gossh.ClientConfig{

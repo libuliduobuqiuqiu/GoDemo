@@ -7,7 +7,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
-	"sunrun/public"
+	"sunrun/pkg"
 )
 
 func printRecord(u *User, result *gorm.DB) {
@@ -49,8 +49,8 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 
 func InitDB(flag string) (db *gorm.DB, err error) {
 
-	globalConfig := public.GetGlobalConfig()
-	var tmpConfig public.MysqlConfig
+	globalConfig := pkg.GetGlobalConfig()
+	var tmpConfig pkg.MysqlConfig
 	switch flag {
 	case "mysql":
 		tmpConfig = globalConfig.MysqlConfig

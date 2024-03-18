@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sunrun/godemo"
+	"sunrun/internal/godemo"
 )
 
 var tokens = make(chan struct{}, 20)

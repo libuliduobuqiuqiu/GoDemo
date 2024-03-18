@@ -1,4 +1,4 @@
-package public
+package pkg
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const ConfigPath = "../conf.json"
+const ConfigPath = "../configs/conf.json"
 
 type GlobalConfig struct {
 	SSHConfig      BaseConfig  `json:"ssh"`
