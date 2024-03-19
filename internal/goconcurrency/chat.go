@@ -49,6 +49,7 @@ func brocaster() {
 					c <- cm.Messages
 				}
 			}
+			fmt.Println(cm.Messages)
 		case c := <-entering:
 			clients[c] = true
 		case c := <-leaving:

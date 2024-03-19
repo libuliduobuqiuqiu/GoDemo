@@ -165,6 +165,10 @@ Go Modules工作机制？
 6. 剖析（go test开启标志参数生成各种分析文件-cpuprofile/-blockprofile/-memprofile）
 7. 示例函数（命名Example为开头, 没有函数参数和返回值)
 
+go test 命令：
+- -v 指定测试的文件
+- -run 指定测试的函数
+
 ### 反射
 
 反射：
