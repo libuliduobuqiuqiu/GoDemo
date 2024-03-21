@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"godemo/pkg"
 	"log"
 	"strings"
-	"sunrun/pkg"
 )
 
 func GetDB(config pkg.MysqlConfig) (db *sql.DB, err error) {

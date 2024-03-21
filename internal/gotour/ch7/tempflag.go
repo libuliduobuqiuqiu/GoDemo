@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"godemo/internal/gotour/ch7/tempconv"
 	"io"
 	"os"
 	"sort"
-	"sunrun/internal/gotour/ch7/tempconv"
 )
 
 var temp = tempconv.CelsiusFlag("temp", 20.0, "the temprature")

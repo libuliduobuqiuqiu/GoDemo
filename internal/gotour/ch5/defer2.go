@@ -3,12 +3,12 @@ package Demo
 import (
 	"bufio"
 	"fmt"
+	"godemo/internal/godemo"
 	"log"
 	"os"
 	"runtime"
 	"sort"
 	"strings"
-	"sunrun/internal/godemo"
 	"time"
 )
 

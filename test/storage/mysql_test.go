@@ -2,10 +2,10 @@ package storage
 
 import (
 	"fmt"
+	"godemo/internal/gomanual/reflectdemo"
+	"godemo/internal/gostorage/standardmysql"
+	"godemo/pkg"
 	"log"
-	"sunrun/internal/gomanual/reflectdemo"
-	"sunrun/internal/gostorage/standardmysql"
-	"sunrun/pkg"
 	"testing"
 )
 

@@ -3,9 +3,9 @@ package sshdemo
 import (
 	"bytes"
 	"fmt"
+	"godemo/pkg"
 	gossh "golang.org/x/crypto/ssh"
 	"log"
-	"sunrun/pkg"
 )
 
 func ExecServerCommand() {

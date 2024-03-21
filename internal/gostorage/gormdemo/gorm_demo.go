@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/go-faker/faker/v4"
 	"github.com/pborman/uuid"
+	"godemo/pkg"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
-	"sunrun/pkg"
 )
 
 func printRecord(u *User, result *gorm.DB) {

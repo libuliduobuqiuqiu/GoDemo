@@ -1,4 +1,4 @@
-package gosocket
+package goweb
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 )
 
 type LoginForm struct {
-	User     string `form: "User" binding: "required"`
-	Password string `form: "Password" binding: "required"`
+	User     string `form:"user" binding:"required"`
+	Password string `form:"pssword" binding:"required"`
 }
 
 var secrets = gin.H{
@@ -19,28 +19,35 @@ var secrets = gin.H{
 	"lena":   gin.H{"emial": "lena@example.coim", "phone": "5234423"},
 }
 
-func Gin_new() *gin.Engine {
-	user := make(map[string]string)
-	user["name"] = "linshukai"
-	user["age"] = "22"
-	user["sex"] = "main"
+func postJSON(c *gin.Context) {
+	var user struct {
+		Name string `json:"name"`
+		Age  string `json:"age"`
+	}
+	if err := c.BindJSON(&user); err != nil {
+		c.String(http.StatusUnauthorized, "err")
+	}
+	name := user.Name
+	age := user.Age
+	c.String(http.StatusOK, name+","+age+", posting ok.")
+}
 
-	address := make(map[string]interface{})
-	address["name"] = "boning"
-	address["country"] = "china"
-	address["city"] = "guanghzou"
+func jsonGroupInit(engine *gin.Engine) {
+	address := map[string]interface{}{
+		"name":    "golang",
+		"country": "china",
+		"city":    "guangzhou",
+	}
 
-	r := gin.New()
-	r.Use(gin.Logger())
-	r.LoadHTMLGlob("../templates/*")
-
-	r.GET("/test", func(c *gin.Context) {
+	group := engine.Group("json-group")
+	group.GET("/print-json", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"test": "2022-11-1",
 		})
 	})
 
-	r.GET("/test2", func(c *gin.Context) {
+	// unicode ascii json
+	group.GET("/print-assciijson", func(c *gin.Context) {
 		data := map[string]interface{}{
 			"lang": "Go语言",
 			"tag":  "1.19",
@@ -48,20 +55,52 @@ func Gin_new() *gin.Engine {
 		c.AsciiJSON(http.StatusOK, data)
 	})
 
-	r.GET("/index", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"title": "Main WebSite",
-		})
-	})
-
-	r.GET("/JSONP", func(c *gin.Context) {
+	// javascript
+	group.GET("/jsonp", func(c *gin.Context) {
 		data2 := map[string]interface{}{
 			"foo": "bar",
 		}
 		c.JSONP(http.StatusOK, data2)
 	})
 
-	r.POST("/login", func(c *gin.Context) {
+	// json
+	group.GET("/json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"html": "<b>Hell, world</b>",
+		})
+	})
+	group.POST("json", postJSON)
+
+	// pure json
+	group.GET("/purejson", func(c *gin.Context) {
+		c.PureJSON(200, gin.H{
+			"html": "<b>Hello, world</b>",
+		})
+	})
+
+	// message
+	group.GET("/moreJSON", func(c *gin.Context) {
+		var msg struct {
+			Name     string `json:"name"`
+			Messages string `json:"message"`
+			Number   int    `json:"number"`
+		}
+		msg.Name = "Lena"
+		msg.Messages = "hey"
+		msg.Number = 123
+		c.JSON(http.StatusOK, msg)
+	})
+
+	group.GET("/someJSON", func(c *gin.Context) {
+		// userList := []string{"wangwu", "zhangsna", "foo"}
+		c.SecureJSON(http.StatusOK, address)
+	})
+
+}
+
+func formGroupInit(engine *gin.Engine) {
+	group := engine.Group("form-group")
+	group.POST("/login", func(c *gin.Context) {
 		var form LoginForm
 		if c.ShouldBind((&form)) == nil {
 			if form.User == "user" && form.Password == "password" {
@@ -72,7 +111,7 @@ func Gin_new() *gin.Engine {
 		}
 	})
 
-	r.POST("/form_post", func(c *gin.Context) {
+	group.POST("/form_post", func(c *gin.Context) {
 		message := c.PostForm("message")
 		nick := c.DefaultPostForm("nick", "anonymous")
 
@@ -83,19 +122,7 @@ func Gin_new() *gin.Engine {
 		})
 	})
 
-	r.GET("/json", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"html": "<b>Hell, world</b>",
-		})
-	})
-
-	r.GET("/purejson", func(c *gin.Context) {
-		c.PureJSON(200, gin.H{
-			"html": "<b>Hello, world</b>",
-		})
-	})
-
-	r.POST("/post", func(c *gin.Context) {
+	group.POST("/post", func(c *gin.Context) {
 		id := c.Query("id")
 		page := c.DefaultQuery("page", "0")
 		name := c.PostForm("name")
@@ -107,35 +134,8 @@ func Gin_new() *gin.Engine {
 		})
 	})
 
-	r.GET("/someJSON", func(c *gin.Context) {
-		// userList := []string{"wangwu", "zhangsna", "foo"}
-		c.SecureJSON(http.StatusOK, address)
-	})
-
-	r.GET("/moreJSON", func(c *gin.Context) {
-		var msg struct {
-			Name     string `json:user`
-			Messages string
-			Number   int
-		}
-		msg.Name = "Lena"
-		msg.Messages = "hey"
-		msg.Number = 123
-		c.JSON(http.StatusOK, msg)
-	})
-
-	r.GET("/someXML", func(c *gin.Context) {
-
-		c.XML(http.StatusOK, gin.H{"message": "hey", "status": http.StatusOK})
-
-	})
-
-	r.GET("/someYAML", func(c *gin.Context) {
-		c.YAML(http.StatusOK, gin.H{"message": "hey", "status": http.StatusOK})
-	})
-
-	r.MaxMultipartMemory = 8 << 20
-	r.POST("/upload", func(c *gin.Context) {
+	engine.MaxMultipartMemory = 8 << 20
+	group.POST("/upload", func(c *gin.Context) {
 		file, _ := c.FormFile("file")
 		log.Println(file.Filename)
 
@@ -144,7 +144,7 @@ func Gin_new() *gin.Engine {
 		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded", file.Filename))
 	})
 
-	r.POST("/uploads", func(c *gin.Context) {
+	group.POST("/uploads", func(c *gin.Context) {
 		form, _ := c.MultipartForm()
 		files := form.File["upload[]"]
 
@@ -156,7 +156,11 @@ func Gin_new() *gin.Engine {
 		c.String(http.StatusOK, fmt.Sprintf("%d file uploaded", len(files)))
 	})
 
-	r.GET("/someDataFromReader", func(c *gin.Context) {
+}
+
+func othersGroupInit(engine *gin.Engine) {
+	group := engine.Group("others")
+	group.GET("/someDataFromReader", func(c *gin.Context) {
 		// 从指定地址获取图片
 		response, err := http.Get("https://raw.githubusercontent.com/gin-gonic/logo/master/color.png")
 
@@ -177,9 +181,20 @@ func Gin_new() *gin.Engine {
 		c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 	})
 
+	// xml
+	group.GET("/someXML", func(c *gin.Context) {
+		c.XML(http.StatusOK, gin.H{"message": "hey", "status": http.StatusOK})
+
+	})
+
+	// yaml
+	group.GET("/someYAML", func(c *gin.Context) {
+		c.YAML(http.StatusOK, gin.H{"message": "hey", "status": http.StatusOK})
+	})
+
 	// 使用BasicAuth组件
 	// gin.Accounts是map[string]string的一种快捷方式
-	authorized := r.Group("/admin", gin.BasicAuth(gin.Accounts{
+	authorized := engine.Group("/admin", gin.BasicAuth(gin.Accounts{
 		"foo":    "bar",
 		"austin": "1234",
 		"lena":   "hello",
@@ -197,25 +212,18 @@ func Gin_new() *gin.Engine {
 		}
 	})
 
-	r.GET("/someGet", getting)
-	r.POST("/somePost", posting)
-	return r
-
 }
 
-func getting(c *gin.Context) {
-	c.String(http.StatusOK, "getting ok.")
-}
+func StartGin() {
+	r := gin.New()
 
-func posting(c *gin.Context) {
-	var user struct {
-		Name string `json:name`
-		Age  string `json:age`
-	}
-	if err := c.BindJSON(&user); err != nil {
-		c.String(http.StatusUnauthorized, "err")
-	}
-	name := user.Name
-	age := user.Age
-	c.String(http.StatusOK, name+","+age+", posting ok.")
+	r.Use(gin.Logger())
+	r.LoadHTMLGlob("../../web/templates/index.html")
+	r.GET("/index", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"title": "Main WebSite",
+		})
+	})
+	jsonGroupInit(r)
+	r.Run(":8999")
 }

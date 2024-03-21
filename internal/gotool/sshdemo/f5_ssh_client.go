@@ -2,8 +2,8 @@ package sshdemo
 
 import (
 	"fmt"
+	"godemo/pkg"
 	"golang.org/x/crypto/ssh"
-	"sunrun/pkg"
 )
 
 func Connect(s pkg.BaseConfig, cmd string) {

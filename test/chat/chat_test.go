@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"sunrun/internal/goconcurrency"
+	"godemo/internal/goconcurrency"
 	"testing"
 )
 

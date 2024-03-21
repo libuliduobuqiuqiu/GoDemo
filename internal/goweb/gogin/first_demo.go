@@ -1,4 +1,4 @@
-package gosocket
+package goweb
 
 import (
 	"context"
@@ -17,6 +17,12 @@ func Graceful_new() {
 	r.GET("/", func(c *gin.Context) {
 		time.Sleep(5 * time.Second)
 		c.String(http.StatusOK, "Welcome the Gin Server.")
+	})
+
+	r.GET("/index", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"name": "linshukai",
+		})
 	})
 
 	srv := &http.Server{

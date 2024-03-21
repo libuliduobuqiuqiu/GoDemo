@@ -1,4 +1,4 @@
-module sunrun
+module godemo
 
 go 1.21
 

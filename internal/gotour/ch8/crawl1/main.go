@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"godemo/internal/godemo"
 	"log"
 	"os"
-	"sunrun/internal/godemo"
 )
 
 var tokens = make(chan struct{}, 20)
