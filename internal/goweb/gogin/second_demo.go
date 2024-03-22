@@ -215,6 +215,7 @@ func othersGroupInit(engine *gin.Engine) {
 }
 
 func StartGin() {
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 
 	r.Use(gin.Logger())
