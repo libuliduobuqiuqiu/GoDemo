@@ -1,0 +1,8 @@
+version: v1
+plugins:
+  - plugin: go
+    out: ../gen
+    opt:
+  - plugin: go-grpc
+    out: ../gen
+    opt:

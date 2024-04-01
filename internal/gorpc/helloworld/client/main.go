@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"godemo/internal/gorpc/gen"
+	"godemo/internal/gorpc/helloworld/gen"
 	"log"
 
 	"google.golang.org/grpc"

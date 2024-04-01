@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"godemo/internal/gorpc/gen"
+	"godemo/internal/gorpc/helloworld/gen"
 	"log"
 	"net"
 

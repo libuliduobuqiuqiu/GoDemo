@@ -1,0 +1,18 @@
+syntax="proto3";
+
+
+option go_package = ".;gen";
+
+import "google/protobuf/wrappers.proto";
+
+message Message {
+  string from = 1;
+  string content = 2;
+  string to = 3;
+  }
+
+
+service MessageService {
+  rpc SendMessage(google.protobuf.StringValue) returns (stream Message);
+  rpc RecvMessage(stream Message) returns (google.protobuf.Int64Value);
+  }

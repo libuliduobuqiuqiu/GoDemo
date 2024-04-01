@@ -1,0 +1,8 @@
+version: v1
+plugins:
+  - plugin: go
+    out: hello2
+    opt:
+  - plugin: go-grpc
+    out: hello2
+    opt:
