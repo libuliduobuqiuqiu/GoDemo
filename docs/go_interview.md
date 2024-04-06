@@ -11,9 +11,13 @@ Channel是什么？为什么安全？
 nil slice和空slice有什么区别？
 > nil slice赋值的时候会出现越界错误，因为只声明了slice，没有实例化对象；
 
-
+## 并发
 Go的并发机制以及它使用的CSP并发模型?
 Go GPM 调度模型?
+- G: Goroutine 协程
+- P: Processer 处理器
+- M: Machine 线程
+
 进程、线程、协程之间的区别？
 数据竞争如何解决？
 垃圾回收?
