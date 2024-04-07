@@ -8,5 +8,6 @@ import "godemo/internal/goconcurrency"
 func main() {
 	// web.BConfig.CopyRequestBody = true
 	// web.Run(":8090")
-	goconcurrency.PrintFib()
+	// goconcurrency.PrintFib()
+	goconcurrency.CountBalance()
 }
