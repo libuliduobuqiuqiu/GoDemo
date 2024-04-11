@@ -28,16 +28,24 @@ Go的几种锁（使用场景）：
 - 读写锁(sync.RWMutex)-写时不可读、读时不可写、不可并发写、可以并发读
 - sync.Map(并发安全的底层原理)
 
+
 Go语言栈空间管理?
 数据竞争如何解决？
 进程、线程、协程之间的区别？
 Goroutine 数量怎么限制？能在多少个线程上运行？
 > Channel sync.WaitGroup
+Context使用场景?
+原子操作，CAS算法
+
+并发场景：
+- 限制主协程在所有协程完成后才能执行；(sync.WaitGroup)
 
 
 ## 垃圾回收
 
 垃圾回收?
+
+Go 逃逸分析？
 
 ## 语法
 
@@ -52,7 +60,9 @@ Goroutine 退出：
 - for-range 检测通道是否关闭
 - select-case
 
-
 nil slice和空slice有什么区别？
 > nil slice赋值的时候会出现越界错误，因为只声明了slice，没有实例化对象；
+
+Go slice扩容策略？
+Go 值接收器和指针接收器？
 
