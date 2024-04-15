@@ -10,4 +10,8 @@ func main() {
 	// web.Run(":8090")
 	// goconcurrency.PrintFib()
 	goconcurrency.CountBalance()
+
+	ch := make(chan int)
+	ch <- 12
+
 }

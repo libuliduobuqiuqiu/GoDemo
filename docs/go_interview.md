@@ -34,8 +34,11 @@ Go语言栈空间管理?
 进程、线程、协程之间的区别？
 Goroutine 数量怎么限制？能在多少个线程上运行？
 > Channel sync.WaitGroup
+
 Context使用场景?
 原子操作，CAS算法
+Go Channel的实现？
+
 
 并发场景：
 - 限制主协程在所有协程完成后才能执行；(sync.WaitGroup)
@@ -65,4 +68,14 @@ nil slice和空slice有什么区别？
 
 Go slice扩容策略？
 Go 值接收器和指针接收器？
+new和make的区别:
+> new是传入一个类型，申请内存空间，并初始化为对应的零值，返回该内存空间的指针（主要初始化对象为值类型）make只用来为引用类型对象slice、chan、map的内存创建，返回的是类型本身；
+
+Map的底层实现: 哈希函数、扩容策略、查找性能、碰撞？
+
+接口值和nil进行比较时，会比较接口值的类型T和值V是否都是unset状态
+
+## 网络
+
+Go的http包实现原理？
 
