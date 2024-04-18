@@ -169,7 +169,10 @@ go test 命令：
 - -v 指定测试的文件
 - -run 指定测试的函数
 
-go convey测试框架？
+go convey测试框架（相对于普通testing内置测试区别？）
+- 方便的多层级嵌套测试，可以观测到具体测试路径；(和普通的顺序执行不同，树形结构需要回到父节点执行)
+- 易上手的断言使用
+- 支持可视化
 
 ### 反射
 
@@ -187,3 +190,6 @@ go convey测试框架？
 TypeOf 和 ValueOf
 - TypeOf 返回传入interface对应的反射类型
 - ValueOf 返回一个新的Value，初始化为传入interface的实际值
+
+### 泛型
+
