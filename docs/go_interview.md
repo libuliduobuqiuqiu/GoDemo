@@ -34,6 +34,8 @@ Channel是什么？为什么安全？
 - Go的并发设计思想就是通过通信来共享内存，而不是通过内存来通信（前者通过Channel、后者通过锁）
 
 
+Go Channel的实现？
+
 ### 锁
 
 Go的几种锁（使用场景）：
@@ -44,6 +46,8 @@ Go的几种锁（使用场景）：
 数据竞争如何解决？
 > 锁、Channel、CAS操作
 
+原子操作，CAS算法
+
 ### WaitGroup
 
 并发场景：
@@ -52,10 +56,15 @@ Go的几种锁（使用场景）：
 
 ### Context
 Context使用场景?
-Go Channel的实现？
+> 需要统一对多个goroutine执行“取消”动作，常用于并发控制和超时控制；(也可用于传递共享数据)
+
+Context接口：
+- Done() <- chan struct{}:当Context被取消或者到Dealine，返回一个channel
+- Err() error: 当channel Done被关闭后，返回context取消原因
+- Dealine() (deadline time.Time, ok bool)：返回context截止时间
+- Value()：返回之前设置key的value
 
 Go语言栈空间管理?
-原子操作，CAS算法
 
 ## 垃圾回收
 

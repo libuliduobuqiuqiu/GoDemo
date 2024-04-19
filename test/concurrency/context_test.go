@@ -2,13 +2,17 @@ package concurrency_test
 
 import (
 	"fmt"
-	"godemo/internal/goconcurrency"
+	"godemo/internal/goconcurrency/gocontext"
 	"sort"
 	"testing"
 )
 
 func TestUseContext(t *testing.T) {
-	goconcurrency.UseContext()
+	gocontext.UseContext()
+}
+
+func TestRunGenNum(t *testing.T) {
+	gocontext.RunGenNum()
 }
 
 func TestSortMap(t *testing.T) {
