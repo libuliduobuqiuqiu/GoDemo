@@ -30,6 +30,7 @@ func (a *Animal) Hello() {
 	fmt.Println(word)
 }
 
+// HandleReflect 反射调用对象的方法
 func HandleReflect(r interface{}) (err error) {
 
 	t := reflect.TypeOf(r)

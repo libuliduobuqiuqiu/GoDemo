@@ -15,6 +15,10 @@ func TestRunGenNum(t *testing.T) {
 	gocontext.RunGenNum()
 }
 
+func TestTransformVar(t *testing.T) {
+	gocontext.TransfromVar()
+}
+
 func TestSortMap(t *testing.T) {
 	a := map[string]int{
 		"zhangsan":   11,
