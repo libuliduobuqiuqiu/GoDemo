@@ -3,10 +3,31 @@ package reflectdemo
 import (
 	"fmt"
 	"reflect"
-	"testing"
 )
 
-func TestReflectDemo(t *testing.T) {
+type ObjOperation interface {
+	GetOptions() map[string]string
+}
+
+type Man struct {
+	sex string
+	Person
+}
+
+type Person struct {
+	Name    string
+	Age     int
+	Options map[string]string
+}
+
+func (p *Person) GetOptions() map[string]string {
+	return p.Options
+}
+
+func (p *Person) SetOptions(o map[string]string) {
+	p.Options = o
+}
+func ReflectUseMethod() {
 
 	p := Person{Name: "zhangsan", Age: 22}
 	p.SetOptions(map[string]string{"address": "guangdong"})
@@ -28,7 +49,7 @@ func TestReflectDemo(t *testing.T) {
 	}
 }
 
-func TestReflectDemo2(t *testing.T) {
+func ReflectChangeValue() {
 	// 创建一个SPerson类型的指针对象p，并赋值为&SPerson{"Alice", 18}
 	p := &SPerson{"Alice", 18}
 	if err := HandleReflect(p); err != nil {
