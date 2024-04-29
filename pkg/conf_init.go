@@ -2,12 +2,11 @@ package pkg
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"os"
 )
 
-const ConfigPath = "../configs/conf.json"
+const ConfigPath = "/data/GoDemo/configs/conf.json"
 
 type GlobalConfig struct {
 	SSHConfig      BaseConfig  `json:"ssh"`
@@ -36,17 +35,12 @@ func GetGlobalConfig() GlobalConfig {
 		log.Fatal(err)
 	}
 
-	file, err := os.Open(ConfigPath)
+	fileContent, err := os.ReadFile(ConfigPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fd, err := io.ReadAll(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err = json.Unmarshal(fd, &globalConfig); err != nil {
+	if err = json.Unmarshal(fileContent, &globalConfig); err != nil {
 		log.Fatal()
 	}
 	return globalConfig

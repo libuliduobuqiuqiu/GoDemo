@@ -9,3 +9,9 @@ company/
 conf.json
 
 main/main.go
+
+# 临时文件
+*.temp
+
+# 性能分析文件
+*.profile
