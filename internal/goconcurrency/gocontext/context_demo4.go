@@ -1,4 +1,4 @@
-package contextdemo
+package gocontext
 
 import (
 	"context"
