@@ -1,18 +1,23 @@
 package main
 
-import "fmt"
+import "godemo/internal/gotool/pprofdemo"
 
 // "github.com/beego/beego/v2/server/web"
 // _ "godemo/internal/goweb/gowebsockets"
 //
 //
 
+type Node struct {
+	FileNodeIP string
+	Status     string
+}
+
 func main() {
 	// web.BConfig.CopyRequestBody = true
 	// web.Run(":8090")
 	// goconcurrency.PrintFib()
 
-	a := []string{"linshuka", "22", "23242", "lengued", "hero"}
-
-	fmt.Println(a[:3])
+	// profdemo.AnalysisFibByPprof()
+	// pprofdemo.AnalysisFibByTrace()
+	pprofdemo.AnalysisHttpServer()
 }

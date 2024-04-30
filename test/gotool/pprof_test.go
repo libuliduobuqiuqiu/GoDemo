@@ -6,5 +6,5 @@ import (
 )
 
 func TestAnysisFib(t *testing.T) {
-	pprofdemo.AnalysisFib()
+	pprofdemo.AnalysisFibByPprof()
 }
