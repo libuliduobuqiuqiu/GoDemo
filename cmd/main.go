@@ -1,11 +1,6 @@
 package main
 
-import "godemo/internal/gotool/pprofdemo"
-
-// "github.com/beego/beego/v2/server/web"
-// _ "godemo/internal/goweb/gowebsockets"
-//
-//
+import "godemo/internal/goconcurrency"
 
 type Node struct {
 	FileNodeIP string
@@ -13,11 +8,5 @@ type Node struct {
 }
 
 func main() {
-	// web.BConfig.CopyRequestBody = true
-	// web.Run(":8090")
-	// goconcurrency.PrintFib()
-
-	// profdemo.AnalysisFibByPprof()
-	// pprofdemo.AnalysisFibByTrace()
-	pprofdemo.AnalysisHttpServer()
+	goconcurrency.PrintFib()
 }

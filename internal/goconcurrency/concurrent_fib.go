@@ -29,7 +29,7 @@ func fib(n int) int {
 // 测试普通Map同时并发写入出现问题？go 自带-race机制检测数据竞争问题
 func PrintFib() {
 	var wg = &sync.WaitGroup{}
-	go spinner(100 * time.Millisecond)
+	// go spinner(100 * time.Millisecond)
 	execFib := func(n int, wg *sync.WaitGroup) {
 		defer wg.Done()
 		tmp := fib(n)
@@ -38,7 +38,7 @@ func PrintFib() {
 	}
 
 	var i int
-	for i = 0; i < 50; i++ {
+	for i = 0; i < 40; i++ {
 		wg.Add(1)
 		go execFib(i, wg)
 	}

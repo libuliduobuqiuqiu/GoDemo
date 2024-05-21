@@ -30,3 +30,17 @@ func marshalMan() {
 	NewSuccessItem[Man](200, "success", &a)
 
 }
+
+// 类型约束接口
+type Number interface {
+	~int | ~int8 | ~int32 | ~int64
+}
+
+func SumInt[n Number](a, b n) n {
+	return a + b
+}
+
+func Equal[n Number](a, b n) bool {
+	fmt.Println(a, b)
+	return a == b
+}

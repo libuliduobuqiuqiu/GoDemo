@@ -16,3 +16,5 @@ main/main.go
 # 性能分析文件
 *.profile
 *.out
+
+main
