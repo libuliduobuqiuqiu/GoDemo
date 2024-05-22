@@ -49,4 +49,34 @@ func ExampleSayHello() {
 
 > 对程序中最小可测单元进行测试（单元大小取决开发者：结构体、包、函数、类型）
 
+基础使用：
+- Test作为测试函数的前缀，传入参数必须为t *testing.T
+- t.Cleanup注册一个收尾函数结束测试
+- t.Helper()可以标记当前函数为帮助函数，测试打印过程只会显示帮助函数调用者的位置
+- t.Run()可以在测试用例中调用其他的测试用例，这种嵌套的测试用例称为子测试
+- 测试数据可以通过结构体切片的形式（表格风格）声明，更加方便直观
 
+Cleanup函数、Helper函数
+```go
+func CleanUpHepler(t *testing.T) {
+	t.Helper()
+	t.Log("test finished")
+}
+
+func TestEqual(t *testing.T) {
+	t.Cleanup(func() {
+		CleanUpHepler(t)
+	})
+	a, b := myInt(101), myInt(101)
+
+	if !genericsdemo.Equal[myInt](a, b) {
+		t.Errorf("equal(%d, %d) error", a, b)
+	}
+}
+```
+### 基准测试
+
+> 基准测试又叫做性能测试，常用于对程序的内存占用、CPU使用情况、执行耗时等性能指标；
+
+基础使用：
+- BenchMark作为测试函数的前缀，传入参数必须为b *testing.B
