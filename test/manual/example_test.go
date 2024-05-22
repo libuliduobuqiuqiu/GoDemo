@@ -30,7 +30,7 @@ type myInt int
 
 func TestSumInt(t *testing.T) {
 	a, b := 1, 101
-	expected := 103
+	expected := 102
 
 	actual := genericsdemo.SumInt[int](a, b)
 	if expected != actual {
@@ -39,13 +39,23 @@ func TestSumInt(t *testing.T) {
 }
 
 func TestEqual(t *testing.T) {
-	t.Cleanup(func() {
-		t.Helper()
-		t.Logf("finished.")
-	})
 	a, b := myInt(101), myInt(101)
 
 	if !genericsdemo.Equal[myInt](a, b) {
 		t.Errorf("equal(%d, %d) error", a, b)
 	}
+}
+
+func BenchmarkEqual(t *testing.B) {
+	a, b := myInt(101), myInt(101)
+
+	for i := 0; i < 99999; i++ {
+		if !genericsdemo.Equal[myInt](a, b) {
+			t.Errorf("equal(%d, %d) error", a, b)
+		}
+	}
+}
+
+func FuzzEqual(t *testing.F) {
+	t.Logf("fuzzy testing.")
 }

@@ -41,6 +41,5 @@ func SumInt[n Number](a, b n) n {
 }
 
 func Equal[n Number](a, b n) bool {
-	fmt.Println(a, b)
 	return a == b
 }
