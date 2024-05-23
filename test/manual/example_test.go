@@ -73,7 +73,3 @@ func BenchmarkEqual(t *testing.B) {
 		}
 	}
 }
-
-func FuzzEqual(t *testing.F) {
-	t.Logf("fuzzy testing.")
-}

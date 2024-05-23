@@ -20,4 +20,6 @@ func main() {
 	}
 	fmt.Println(n.NodeInfo.ID)
 	fmt.Println(n.NodeInfo.IsVaild)
+
+	fmt.Println(100_100.)
 }
