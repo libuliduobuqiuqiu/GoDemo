@@ -1,6 +1,8 @@
-## 测试
+## Go testing
 
-Go tes工具支持几种测试类型：
+> 简单介绍Go官方支持的测试，以及日常开发过程中使用到的测试场景；
+
+Go test工具支持几种测试类型：
 1. 示例测试
 2. 单元测试
 3. 基准测试
@@ -28,7 +30,6 @@ go test -v sum_test.go -bench .
 go test -v sum_test.go -bench . -run ^$
 ```
 只测试sum_test.go文件下的所有基准测试，相当于-run限制了其余测试用例的名称
-
 
 执行测试命令常用参数：
 - -v：输出更详细的测试日志；
@@ -145,8 +146,6 @@ ok  	command-line-arguments	25.414s
 - 函数前缀需要使用Fuzz，传入参数必须为f *testing.F
 - -fuzz 执行模糊测试是通过语料库，生成随机测试数据进行测试
 
-官方文档：
-> https://go.dev/doc/security/fuzz/
 
 模糊测试字符串反转函数
 ```go
@@ -187,3 +186,14 @@ func FuzzReverse(f *testing.F) {
 ```
 - f.Add 往语料库添加数据
 - f.Fuzz 添加单元测试函数
+
+### 参考
+
+testing库：
+> https://pkg.go.dev/testing@go1.22.3
+
+模糊测试:
+> https://go.dev/doc/security/fuzz/
+
+参考文章：
+> https://golang.halfiisland.com/essential/senior/120.test.html
