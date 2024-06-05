@@ -157,12 +157,10 @@ Go的defer语句?
 闭包操作
 
 ### slice
-
 nil slice和空slice有什么区别？
 > nil slice赋值的时候会出现越界错误，因为只声明了slice，没有实例化对象；
 
-Go slice扩容策略？
-
+**Go slice扩容策略？**
 slice和map传递过程中有什么区别？
 
 ### map

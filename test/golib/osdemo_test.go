@@ -14,3 +14,9 @@ func TestUseFileUtil(t *testing.T) {
 func TestUseBufioMaxInsert(t *testing.T) {
 	osdemo.UseBufioMaxInsert()
 }
+
+func TestHandleFile(t *testing.T) {
+	if err := osdemo.HandleFile(); err != nil {
+		t.Fatal(t)
+	}
+}

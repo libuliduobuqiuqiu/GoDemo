@@ -2,7 +2,9 @@ package osdemo
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -16,6 +18,50 @@ var lines = []string{
 	"ifconfig",
 	"top",
 	"netstat",
+}
+
+// 手动扩容切片读取文件
+func ControllReadFile(f *os.File) (body string, err error) {
+	data := make([]byte, 512)
+	for {
+		if len(data) == cap(data) {
+			data = append(data, 0)[:len(data)]
+		}
+
+		count, err := f.Read(data[len(data):cap(data)])
+		data = data[:len(data)+count]
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				body = string(data)
+				err = nil
+			}
+			return body, err
+		}
+	}
+}
+
+func AutomaticReadFile(filePath string) (string, error) {
+
+	body, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	return string(body), err
+}
+
+func HandleFile() error {
+
+	f, err := os.Open("/root/install_etcd.sh")
+	if err != nil {
+		return err
+	}
+	fmt.Println(f.Stat())
+
+	_, err = ControllReadFile(f)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func UseFileUtil() error {
