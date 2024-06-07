@@ -86,8 +86,8 @@ func AdvancedReadFile() (data []byte, err error) {
 	}
 }
 
-func IOReadFile() error {
-	f, err := os.Open(newFilePath)
+func IOReadFile(targetPath string) error {
+	f, err := os.Open(targetPath)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func IOReadFile() error {
 }
 
 func SimpleWriteFile() error {
-	file, err := os.OpenFile(newFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
@@ -146,4 +146,76 @@ func IOWriteFile() error {
 	}
 	return nil
 
+}
+
+// 简单读取文件然后写入另外一个文件
+func SimpleCopyFile() error {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(newFilePath, []byte(data), 0666)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func AdvancedCopyFile(originPath, targetPath string) error {
+	origin, err := os.OpenFile(originPath, os.O_RDONLY, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开源文件失败")
+	}
+	defer origin.Close()
+
+	target, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开目的文件失败")
+	}
+	defer target.Close()
+
+	n, err := target.ReadFrom(origin)
+	if err != nil {
+		return errors.Wrap(err, "复制文件失败")
+	}
+	fmt.Println("文件复制成功", n)
+	return nil
+}
+
+func IOCopyFile(originPath, targetPath string) error {
+	origin, err := os.OpenFile(originPath, os.O_RDONLY, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开源文件失败")
+	}
+	defer origin.Close()
+
+	target, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开目的文件失败")
+	}
+	defer target.Close()
+
+	n, err := io.Copy(target, origin)
+	if err != nil {
+		return errors.Wrap(err, "复制文件失败")
+	}
+	fmt.Println("文件复制成功", n)
+	return nil
+}
+
+func DeleteFile(path string) error {
+	if err := os.Remove(path); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteDir(path string) error {
+	if err := os.RemoveAll(path); err != nil {
+		return err
+	}
+	return nil
 }

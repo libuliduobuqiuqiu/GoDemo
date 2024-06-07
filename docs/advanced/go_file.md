@@ -25,7 +25,7 @@ file, err := os.OpenFile(filePath, os.O_WRONLY, 0666)
 ```
 > OpenFile函数可以控制以什么方式打开文件，上述代码是只写模式，所以无法读取到文件里面的内容；
 
-具体控制的细节
+具体控制的细节:
 ```
 const (
    // 只读，只写，读写 三种必须指定一个
@@ -57,7 +57,6 @@ data, err := os.ReadFile(filePath)
 > 传入对应文件路径，返回字节切片
 
 #### io.ReadAll读取打开的文件
-
 ```go
 f, err := os.Open(filePath)
 	if err != nil {
@@ -72,8 +71,7 @@ f, err := os.Open(filePath)
 ```
 
 #### 打开文件后，通过os.File的Read方法读取文件内容
-
-代码参考的是os.ReadFile源码
+> 代码参考的是os.ReadFile源码
 ```go
 func AdvancedReadFile() (data []byte, err error) {
 	f, err := os.Open(filePath)
@@ -109,7 +107,6 @@ func AdvancedReadFile() (data []byte, err error) {
 > 可以直接通过OpenFile打开文件，模式需要设置只写模式或者读写模式，否则无法成功写入文件；os还有在前面基础上提供便捷函数,os.WriteFile和io.WriteString方式。
 
 #### 普通打开文件，通过os.File的Write和WriteString方法写入
-
 ```go
   file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND|os.O_TRUNC, 0666)
 	if err != nil {
@@ -126,7 +123,6 @@ func AdvancedReadFile() (data []byte, err error) {
 	}
 ```
 #### os.WriteFile直接将将数据写入文件
-
 ```go
 	err := os.WriteFile(path, []byte("hello,world\nhello,world\n"), 0666)
 	if err != nil {
@@ -136,7 +132,6 @@ func AdvancedReadFile() (data []byte, err error) {
 > WriteFile函数只是封装了打开文件的步骤，直接传入字符串即可
 
 #### io.WriteString写入数据
-
 ```go
   file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0666)
 	if err != nil {
@@ -156,4 +151,96 @@ func AdvancedReadFile() (data []byte, err error) {
 ```
 > io.WriteString 不仅可以写文件，只要实现了io.Writer接口的，都可以写入（net.Conn、os.Stdout、bytes.Buffer)，更加灵活；
 
+### 复制
 
+> 复制文件，本质上就是从某个文件读取内容，然后复制到目的文件，可以追加内容也可以覆盖内容，取决于打开文件的模式。以及os和io提供了封装的函数用于复制，本质上是实现了ReadFrom接口。
+
+#### 正常读取文件，然后写入到目的文件，完成复制操作
+```go
+func SimpleCopyFile() error {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(newFilePath, []byte(data), 0666)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+```
+> 注意这里使用的WriteFile方法，写入的文件是清空的，因为这个便捷函数直接默认Open打开的模式是O_TRUNC
+
+#### ReadFrom直接从源文件中读取内容
+```go
+func AdvancedCopyFile(originPath, targetPath string) error {
+	origin, err := os.OpenFile(originPath, os.O_RDONLY, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开源文件失败")
+	}
+	defer origin.Close()
+
+	target, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开目的文件失败")
+	}
+	defer target.Close()
+
+	n, err := target.ReadFrom(origin)
+	if err != nil {
+		return errors.Wrap(err, "复制文件失败")
+	}
+	fmt.Println("文件复制成功", n)
+	return nil
+}
+```
+> 这个示例代码中需要注意的是我是追加，所以复制的东西会一直追加到目标文件
+
+
+#### io.Copy复制
+```go
+func IOCopyFile(originPath, targetPath string) error {
+	origin, err := os.OpenFile(originPath, os.O_RDONLY, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开源文件失败")
+	}
+	defer origin.Close()
+
+	target, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return errors.Wrap(err, "打开目的文件失败")
+	}
+	defer target.Close()
+
+	n, err := io.Copy(target, origin)
+	if err != nil {
+		return errors.Wrap(err, "复制文件失败")
+	}
+	fmt.Println("文件复制成功", n)
+	return nil
+}
+```
+> 可以对比和上面ReadFrom的代码，基本上相似的逻辑，只是在复制部分有点区别；阅读io的源码可知，io这部分判断是否实现了WriteTo或者ReadFrom接口，如果有直接调用对象的方法，如果没有则通过第一部分读取类似的逻辑，for循环读取文件的所有内容，然后写入。这种写法可以更好的兼容不同的类型，而不是拘泥于os.File；
+
+### 删除
+
+> 删除很简单,直接用os的函数Remove和RemoveAll分别删除文件和目录；
+
+```go
+func DeleteFile(path string) error {
+	if err := os.Remove(path); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteDir(path string) error {
+	if err := os.RemoveAll(path); err != nil {
+		return err
+	}
+	return nil
+}
+```

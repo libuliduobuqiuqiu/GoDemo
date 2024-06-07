@@ -36,7 +36,8 @@ func TestAdvancedReadFile(t *testing.T) {
 }
 
 func TestIOReadFile(t *testing.T) {
-	err := osdemo.IOReadFile()
+	targetPath := "/data/GoDemo/internal/golib/osdemo/demo2.json"
+	err := osdemo.IOReadFile(targetPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,8 +48,8 @@ func TestSimpleWriteFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	err = osdemo.IOReadFile()
+	targetPath := "/data/GoDemo/internal/golib/osdemo/demo.json"
+	err = osdemo.IOReadFile(targetPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,6 +64,53 @@ func TestAdvancedWriteFile(t *testing.T) {
 
 func TestIOWriteFile(t *testing.T) {
 	err := osdemo.IOWriteFile()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestSimpleCopyFile(t *testing.T) {
+	err := osdemo.SimpleCopyFile()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAdvancedCopyFile(t *testing.T) {
+	originPath := "/data/GoDemo/internal/golib/osdemo/demo.json"
+	targetPath := "/data/GoDemo/internal/golib/osdemo/demo2.json"
+
+	err := osdemo.AdvancedCopyFile(originPath, targetPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+}
+
+func TestIOCopyFile(t *testing.T) {
+	originPath := "/data/GoDemo/internal/golib/osdemo/demo.json"
+	targetPath := "/data/GoDemo/internal/golib/osdemo/demo2.json"
+
+	err := osdemo.IOCopyFile(originPath, targetPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+}
+
+func TestDeleteFile(t *testing.T) {
+	originPath := "/data/GoDemo/internal/golib/osdemo/demo.json"
+
+	err := osdemo.DeleteFile(originPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestDeleteDir(t *testing.T) {
+	originPath := "/data/GoDemo/internal/golib/osdemo/test"
+
+	err := osdemo.DeleteDir(originPath)
 	if err != nil {
 		t.Fatal(err)
 	}
