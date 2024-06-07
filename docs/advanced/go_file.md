@@ -244,3 +244,9 @@ func DeleteDir(path string) error {
 	return nil
 }
 ```
+
+### 备注
+
+参考链接：
+> https://golang.halfiisland.com/essential/senior/100.io.html
+> https://pkg.go.dev/os@go1.22.4
