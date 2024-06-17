@@ -1,5 +1,11 @@
 ## 并发
 
+常用并发控制：
+- WaitGroup
+- Context
+- Channel
+- Mutex,RWMutex
+
 ### Goroutine
 
 进程、线程、协程之间的区别？
@@ -34,11 +40,12 @@ Goroutine 退出：
 ### Channel
 Channel是什么？为什么安全？
 - 发送和接收都是原子性的;
-- Channel是一个管道，通过管道进行通信；
+- Channel是一个管道，通过管道进行通信，数据是先进先出（FIFO)
 - Go的并发设计思想就是通过通信来共享内存，而不是通过内存来通信（前者通过Channel、后者通过锁）
 
 
 Go Channel的实现？
+
 
 ### 锁
 

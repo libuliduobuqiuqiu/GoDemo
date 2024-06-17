@@ -1,10 +1,10 @@
 package chat
 
 import (
-	"godemo/internal/goconcurrency"
+	"godemo/internal/goconcurrency/gochannel"
 	"testing"
 )
 
 func TestChatServer(t *testing.T) {
-	goconcurrency.StartChat()
+	gochannel.StartChat()
 }
