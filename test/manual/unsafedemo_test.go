@@ -7,7 +7,7 @@ import (
 
 func TestUnsafeDemo(t *testing.T) {
 
-	unsafedemo.UseUnsafePointer()
+	unsafedemo.UseUnsafeConvert()
 
 }
 

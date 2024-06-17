@@ -230,4 +230,7 @@ func BaseUseReflectDeepEqual() {
 	fmt.Println(reflect.DeepEqual(a, b))
 }
 ```
+### 备注
 
+> https://golang.design/go-questions/stdlib/reflect/how/ 
+> https://golang.halfiisland.com/essential/senior/105.reflect.html
