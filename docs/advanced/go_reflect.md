@@ -12,7 +12,7 @@
 
 
 ### reflect.TypeOf
-> reflect.TypeOf函数将变量转换成reflect.Type，reflect.Type代表Go中类型;
+> reflect.TypeOf函数将变量转换成reflect.Type接口,reflect.Type接口定义了一系列方法，通过这些方法可以获取类型的相关信息;
 
 reflect.Type:
 - Kind()：获取变量在Go中的基础类型;
@@ -51,7 +51,8 @@ func BaseUseReflectType() {
 ```
 ### reflect.ValueOf
 
-> reflect.ValueOf函数将变量转换成reflect.Value
+> reflect.ValueOf函数将变量转换成reflect.Value结构体变量，包含类型信息和实际值，并且这个结构体定义了很多方法，通过这些
+方法可以直接操作Value字段ptr所指向的实际数据；
 
 reflect.Value:
 - Type()：获取一个反射值的类型；
