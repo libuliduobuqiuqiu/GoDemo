@@ -6,6 +6,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+// convey 测试框架
 func TestSpec(t *testing.T) {
 	Convey("Start ", t, func() {
 		x := 1
