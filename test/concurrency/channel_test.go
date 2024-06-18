@@ -8,3 +8,7 @@ import (
 func TestUseChannel(t *testing.T) {
 	gochannel.UseChannel()
 }
+
+func TestUseChannelSelect(t *testing.T) {
+	gochannel.UseChannelSelect()
+}
