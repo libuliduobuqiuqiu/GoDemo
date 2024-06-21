@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"net"
 	"testing"
 )
 
@@ -35,11 +34,4 @@ func TestJudegeMainPerson(t *testing.T) {
 
 func TestJudgeList(t *testing.T) {
 	JudgeList(nil)
-}
-
-func TestNetParseIP(t *testing.T) {
-	ip := "240e:6b1:10:1::46"
-	tmpIP := net.ParseIP(ip)
-	fmt.Println(tmpIP)
-	fmt.Println(IPToBinary(tmpIP))
 }

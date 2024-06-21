@@ -10,11 +10,43 @@
 
 #### 收集数据
 
-1. go test内置了pprof支持
+1. go test
+> go内置的testing框架中内置支持了pprof
+
+testing源码：
+```go
+func (m *M) before() {
+	if *memProfileRate > 0 {
+		runtime.MemProfileRate = *memProfileRate
+	}
+	if *cpuProfile != "" {
+		f, err := os.Create(toOutputDir(*cpuProfile))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "testing: %s\n", err)
+			return
+		}
+		if err := m.deps.StartCPUProfile(f); err != nil {
+			fmt.Fprintf(os.Stderr, "testing: can't start cpu profile: %s\n", err)
+			f.Close()
+			return
+		}
+	}
+  // 通过执行命令时传入标识cpuprofile开启性能检测
+}
+```
+本质上还是调用了pprof:
+```go
+func (TestDeps) StartCPUProfile(w io.Writer) error {
+	return pprof.StartCPUProfile(w)
+}
+```
+详细使用：
 ```bash
 go test -v pprof_test.go -bench . -cpuprofile cpu.profile -memprofile mem.profile
 ```
-2. 项目中启用pprof支持
+
+2. 手动开启pprof
+> pprof支持内存、CPU性能情况
 ```go
 func AnalysisFibByPprof() error {
 	// f, err := os.OpenFile("cpu.profile", os.O_CREATE|os.O_RDWR, 0666)
@@ -97,7 +129,6 @@ go test -v pprof_test.go -trace trace.out -bench .
 ```
 
 #### 分析数据
-
 ```bash
 go tool trace -http=:8090 trace.out
 ```

@@ -43,7 +43,7 @@ go test -v sum_test.go -bench . -run ^$
 - -memprofile mem.out：统计测试过程中的内存使用情况并写入文件；
 - -trace trace.out：将执行追踪情况写入文件；
 
-### 示例测试
+### 示例测试(Example)
 
 > 一般用于展示功能的使用方法，起到文档作用
 
@@ -59,7 +59,7 @@ func ExampleSayHello() {
 	// hello
 }
 ```
-### 单元测试
+### 单元测试(Test)
 
 > 对程序中最小可测单元进行测试（单元大小取决开发者：结构体、包、函数、类型）
 
@@ -88,7 +88,7 @@ func TestEqual(t *testing.T) {
 	}
 }
 ```
-### 基准测试
+### 基准测试(BenchMark)
 
 > 基准测试又叫做性能测试，常用于对程序的内存占用、CPU使用情况、执行耗时等性能指标；
 
