@@ -27,3 +27,11 @@ func TestIncrement(t *testing.T) {
 	a := net.ParseIP("192.168.255.255")
 	netdemo.Increment(a)
 }
+
+func TestNetParseIP(t *testing.T) {
+	ip := "240e:6b1:10:1::46"
+	tmpIP := net.ParseIP(ip)
+	t.Log(tmpIP)
+	t.Log(netdemo.IPToBinary(tmpIP))
+	t.Log(netdemo.IPToString(tmpIP))
+}
