@@ -23,3 +23,23 @@ func UseChannelSelect() {
 
 	fmt.Println("Done.")
 }
+
+func UseChannelDone() {
+	ch := make(chan struct{})
+
+	go func() {
+		time.Sleep(2 * time.Second)
+		close(ch)
+	}()
+
+	for {
+		select {
+		case <-ch:
+			fmt.Println("Done.")
+			return
+		case <-time.After(10 * time.Second):
+			fmt.Println("Timeout.")
+			return
+		}
+	}
+}

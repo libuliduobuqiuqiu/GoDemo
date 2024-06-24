@@ -62,6 +62,8 @@ Go的几种锁（使用场景）：
 - 读写锁(sync.RWMutex)-写时不可读、读时不可写、不可并发写、可以并发读
 - sync.Map(并发安全的底层原理)
 
+
+
 数据竞争如何解决？
 > 锁、Channel、CAS操作
 
@@ -72,7 +74,6 @@ Go的几种锁（使用场景）：
 并发场景：
 - 限制主协程在所有协程完成后才能执行；(sync.WaitGroup)
 - 内部实现就是计数器+信号量，协程开始时Add初始化信号量，结束后调用Done，计数-1，直到减为0，主协程会调用Wait一直阻塞等待计数为0时，才会被唤醒；
-
 
 ### Context
 Context使用场景?
@@ -113,11 +114,92 @@ type canceler interface {
 	Done() <-chan struct{}
 }
 ```
-
 context如何被取消？
 - Done()返回一个只读的Channel，通过select，只有当chanel的关闭的时候才能读取到零值；
-- Cancel()，关闭Channel，c.done；递归取消它的所有子节点；从父节点删除自己。达到的效果就是通过关闭channel，然后递归发送取消信号到它所有子节点；
+- Cancel()，关闭Channel，c.done；取消它的所有子节点；从父节点删除自己。达到的效果就是通过关闭channel，然后发送取消信号到它所有子节点；
 
+done()
+```go
+func (c *cancelCtx) Done() <-chan struct{} {
+	d := c.done.Load()
+	if d != nil {
+		return d.(chan struct{})
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	d = c.done.Load()
+	if d == nil {
+		d = make(chan struct{})
+		c.done.Store(d)
+	}
+	return d.(chan struct{})
+}
+```
+> 返回ctx上的done通道
+
+cancel()
+```go
+  d, _ := c.done.Load().(chan struct{})
+	if d == nil {
+		c.done.Store(closedchan)
+	} else {
+		close(d)
+	}
+```
+> 调用退出方法，关闭ctx上的通道；
+
+实际使用
+```go
+func UseCancelCtx() {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		time.Sleep(2 * time.Second)
+		cancel()
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("Done")
+			return
+		case <-time.After(10 * time.Second):
+			fmt.Println("TimeOut")
+			return
+		}
+	}
+}
+```
+
+#### timerCtx
+
+> timerCtx是在cancelCtx的基础上增加了超时机制；提供了两个创建函数WithTimeOut和WithDeadline，前者是指定超时间隔，后者是具体指定超时时间；
+
+```go
+func UseTimerCtx() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	defer cancel()
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("上下文取消：", ctx.Err())
+				return
+			default:
+				fmt.Println("等待取消中。。。")
+				time.Sleep(200 * time.Millisecond)
+			}
+		}
+	}()
+
+	wg.Wait()
+}
+```
+### sync
+> sync标准库提供一些有关并发过程使用的各种工具，sync.Once：懒加载，sync.Pool：对象复用，sync.Map：并发安全的Map，sync/atomic：原子操作;
 
 
 ## 垃圾回收

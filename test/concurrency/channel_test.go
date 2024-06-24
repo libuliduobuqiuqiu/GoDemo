@@ -12,3 +12,7 @@ func TestUseChannel(t *testing.T) {
 func TestUseChannelSelect(t *testing.T) {
 	gochannel.UseChannelSelect()
 }
+
+func TestUseChannelDone(t *testing.T) {
+	gochannel.UseChannelDone()
+}

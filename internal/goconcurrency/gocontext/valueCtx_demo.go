@@ -24,6 +24,7 @@ func handleLining(ctx context.Context, wg *sync.WaitGroup) {
 func HandlerUserValue() {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "name", "linshukai")
+	ctx.Done()
 
 	wg := &sync.WaitGroup{}
 	for i := 0; i < 10; i++ {

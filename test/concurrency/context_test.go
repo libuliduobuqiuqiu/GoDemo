@@ -37,3 +37,11 @@ func TestSortMap(t *testing.T) {
 		fmt.Println(v, a[v])
 	}
 }
+
+func TestCancelContext(t *testing.T) {
+	gocontext.UseCancelCtx()
+}
+
+func TestUseTimerCtx(t *testing.T) {
+	gocontext.UseTimerCtx()
+}
