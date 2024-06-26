@@ -12,6 +12,7 @@ require (
 	github.com/jinzhu/configor v1.2.1
 	github.com/jlaffaye/ftp v0.0.0-20200812143550-39e3779af0db
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/libuliduobuqiuqiu/chat-client v1.0.1-0.20240626093549-ab3eb9c4ccb3
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.5
@@ -48,7 +49,6 @@ require (
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/text v0.1.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
-	github.com/libuliduobuqiuqiu/chat-client v0.0.0-20240625094255-a1e513d16a10 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
