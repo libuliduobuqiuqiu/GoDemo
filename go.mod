@@ -1,6 +1,6 @@
 module godemo
 
-go 1.21
+go 1.21.5
 
 require (
 	github.com/beego/beego/v2 v2.1.6
@@ -48,6 +48,7 @@ require (
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/text v0.1.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/libuliduobuqiuqiu/chat-client v0.0.0-20240625094255-a1e513d16a10 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect

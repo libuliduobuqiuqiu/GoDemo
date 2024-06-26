@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"os"
+
+	"github.com/libuliduobuqiuqiu/chat-client"
 )
 
 func readConn(c net.Conn) {
@@ -35,5 +37,5 @@ func startChatClient() {
 }
 
 func main() {
-	startChatClient()
+	chat.StartChatClient("tcp", "127.0.0.1:8080")
 }

@@ -64,6 +64,12 @@ func TestEqual(t *testing.T) {
 	}
 }
 
+func TestMain(m *testing.M) {
+	fmt.Println("testing start...")
+	m.Run()
+	fmt.Println("testing end...")
+}
+
 func BenchmarkEqual(t *testing.B) {
 	a, b := myInt(101), myInt(101)
 

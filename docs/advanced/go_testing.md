@@ -43,6 +43,19 @@ go test -v sum_test.go -bench . -run ^$
 - -memprofile mem.out：统计测试过程中的内存使用情况并写入文件；
 - -trace trace.out：将执行追踪情况写入文件；
 
+TestMain初始化函数
+```go
+func TestMain(m *testing.M) {
+	fmt.Println("Testing Start.")
+	if err := initDevConf(); err != nil {
+		return
+	}
+	m.Run()
+	fmt.Println("Testing Done.")
+}
+```
+> 对于需要初始化的测试场景，可以通过TestMain函数实现，比如数据库连接、网络连接、文件打开。
+
 ### 示例测试(Example)
 
 > 一般用于展示功能的使用方法，起到文档作用
@@ -69,6 +82,7 @@ func ExampleSayHello() {
 - t.Helper()可以标记当前函数为帮助函数，测试打印过程只会显示帮助函数调用者的位置
 - t.Run()可以在测试用例中调用其他的测试用例，这种嵌套的测试用例称为子测试
 - 测试数据可以通过结构体切片的形式（表格风格）声明，更加方便直观
+
 
 Cleanup函数、Helper函数
 ```go

@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 )
 
 type client chan<- string
 
 type ClientMessage struct {
 	Client   client
+	Name     string
 	Messages string
 }
 
@@ -18,6 +20,7 @@ var (
 	entering = make(chan client)
 	leaving  = make(chan client)
 	messages = make(chan ClientMessage)
+	users    = make(map[string]struct{})
 )
 
 func StartChat() {
@@ -64,23 +67,44 @@ func handleConn(conn net.Conn) {
 	ch := make(chan string)
 	go readWriter(conn, ch)
 
+	buffer := bufio.NewScanner(conn)
+	reader := bufio.NewReader(conn)
 	cm := ClientMessage{Client: ch}
+
+	// 输入对应的用户名称
+loop:
+	for {
+		ch <- "Send your name: "
+		remoteName, err := reader.ReadString('\n')
+		remoteName = strings.Split(remoteName, "\n")[0]
+		if err != nil {
+			fmt.Println(err)
+			continue loop
+		}
+
+		if _, ok := users[remoteName]; ok {
+			ch <- "Error: " + remoteName + " is Exist."
+		} else {
+			cm.Name = remoteName
+			users[remoteName] = struct{}{}
+			break loop
+		}
+	}
 
 	remoteAddr := conn.RemoteAddr().String()
 	ch <- "You IP Address: " + remoteAddr
 
-	cm.Messages = remoteAddr + " has arrived."
+	cm.Messages = cm.Name + " has arrived."
 	messages <- cm
 	entering <- ch
 
-	buffer := bufio.NewScanner(conn)
 	for buffer.Scan() {
-		cm.Messages = remoteAddr + ": " + buffer.Text()
+		cm.Messages = cm.Name + ": \n" + buffer.Text()
 		messages <- cm
 	}
 
 	leaving <- ch
-	cm.Messages = remoteAddr + " has left."
+	cm.Messages = cm.Name + " has left."
 	messages <- cm
 	conn.Close()
 }
