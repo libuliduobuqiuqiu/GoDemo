@@ -1,9 +1,10 @@
-package main
+package godemo
 
 import (
 	"godemo/internal/godemo"
+	"testing"
 )
 
-func main() {
+func TestUseAllocate(t *testing.T) {
 	godemo.UseAllocate()
 }

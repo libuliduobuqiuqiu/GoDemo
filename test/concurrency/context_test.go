@@ -45,3 +45,7 @@ func TestCancelContext(t *testing.T) {
 func TestUseTimerCtx(t *testing.T) {
 	gocontext.UseTimerCtx()
 }
+
+func TestUseCancelGenNum(t *testing.T) {
+	gocontext.UseCancelGenNum()
+}
