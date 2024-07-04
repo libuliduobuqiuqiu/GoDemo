@@ -1,9 +1,11 @@
 package main
 
-import (
-	"godemo/internal/godemo"
-)
+func foo() *int {
+	a := 1
+	return &a
+}
 
 func main() {
-	godemo.UseAllocate()
+	tmp := foo()
+	print(*tmp)
 }
