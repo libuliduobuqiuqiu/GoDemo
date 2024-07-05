@@ -1,11 +1,7 @@
 package main
 
-func foo() *int {
-	a := 1
-	return &a
-}
+import "fmt"
 
 func main() {
-	tmp := foo()
-	print(*tmp)
+	fmt.Println("hello, welcom to godemo project.")
 }

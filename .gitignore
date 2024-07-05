@@ -8,7 +8,6 @@ company/
 
 conf.json
 
-main/main.go
 
 # 临时文件
 *.temp
@@ -17,8 +16,7 @@ main/main.go
 *.profile
 *.out
 
-
-main
-
 # 汇编文件
 *.o
+
+main
