@@ -16,3 +16,7 @@ func TestUseChannelSelect(t *testing.T) {
 func TestUseChannelDone(t *testing.T) {
 	gochannel.UseChannelDone()
 }
+
+func TestRecvClosedChannel(t *testing.T) {
+	gochannel.RecvClosedChannel()
+}

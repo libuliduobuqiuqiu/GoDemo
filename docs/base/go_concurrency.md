@@ -36,6 +36,33 @@ Goroutine 退出：
 
 
 ### Channel
+什么是CSP模型？
+> 不要通过共享内存进行通信，而是试过通信实现内存共享。
+Go依赖CSP模型，基于Channel实现，Go并发原则就是尽量使用Channel，把goroutine作为免费资源使用；
+
+读取一个已关闭的Channel？
+> 当Channel已关闭，如果是有缓冲的，如果里面存在数据依然可以正常读取，当里面没有数据，返回的ok标识则为false；
+
+Channel操作总结:
+|操作|nil channel|closed channel|not nil,not closed channel|
+| ---- | ---- | ---- |---- |
+|close| panic | panic | 正常关闭|
+|读<-ch| panic | 读到对应类型的零值 | 阻塞或者正常读取数据，缓冲型channel为空时和非缓冲型channel没有等待发送者时会阻塞 |
+|写ch<-|panic |panic | 阻塞或者正常写入数据，缓冲型channel buf满时和非缓冲型channel没有等待接收者是会阻塞 |
+
+如何优雅关闭一个Channel？
+> 已知关闭一个已经关闭的channel和写入一个已经关闭的channel会出现panic
+主要根据receiver和sender数量，分下面几种情况：
+1. 1个sender,1个receiver
+2. 1个sender,N个receiver
+3. N个sender,1个receiver
+4. N个sender,N个receiver
+解决方案：
+- 1,2可以直接关闭sender
+- 3可以增加额外的关闭信号通道，receiver通过信号通道发送关闭数据channel指令，sender接收信号通道发送的关闭指令，停止发送数据
+- 4可以增加额外两个通道：关闭信号通道，中间人通道，receiver和sender需要关闭通道可以向中间人通道发送信息，让中间人关闭信号通道，sender和receiver接收到关闭信号通道指令然后退出；
+
+
 Channel是什么？为什么安全？
 - 发送和接收都是原子性的;
 - Channel是一个管道，通过管道进行通信，数据是先进先出（FIFO)
