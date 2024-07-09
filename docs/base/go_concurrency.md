@@ -40,6 +40,11 @@ Goroutine 退出：
 > 不要通过共享内存进行通信，而是试过通信实现内存共享。
 Go依赖CSP模型，基于Channel实现，Go并发原则就是尽量使用Channel，把goroutine作为免费资源使用；
 
+Channel是什么？为什么安全？
+- 发送和接收都是原子性的;
+- Channel是一个管道，通过管道进行通信，数据是先进先出（FIFO)
+- Go的并发设计思想就是通过通信来共享内存，而不是通过内存来通信（前者通过Channel、后者通过锁）
+
 读取一个已关闭的Channel？
 > 当Channel已关闭，如果是有缓冲的，如果里面存在数据依然可以正常读取，当里面没有数据，返回的ok标识则为false；
 
@@ -60,13 +65,14 @@ Channel操作总结:
 解决方案：
 - 1,2可以直接关闭sender
 - 3可以增加额外的关闭信号通道，receiver通过信号通道发送关闭数据channel指令，sender接收信号通道发送的关闭指令，停止发送数据
-- 4可以增加额外两个通道：关闭信号通道，中间人通道，receiver和sender需要关闭通道可以向中间人通道发送信息，让中间人关闭信号通道，sender和receiver接收到关闭信号通道指令然后退出；
+- 4可以增加额外两个通道：关闭信号通道、中间人通道，receiver和sender需要关闭通道可以向中间人通道发送信息，让中间人关闭信号通道，sender和receiver接收到关闭信号通道指令然后退出；
 
+Channel发送和接收的本质是什么？
+> All transfer of value on the go channels happens with the copy of value.
+发送和接收的本质上都是“值的拷贝”
 
-Channel是什么？为什么安全？
-- 发送和接收都是原子性的;
-- Channel是一个管道，通过管道进行通信，数据是先进先出（FIFO)
-- Go的并发设计思想就是通过通信来共享内存，而不是通过内存来通信（前者通过Channel、后者通过锁）
+Channel什么情况下发生泄漏？
+> 泄露的原因一般为goroutine操作channel后，处于发送或者接收阻塞状态，而channel处于满或空的状态一直不会改变。垃圾回收器不会回收此类资源。
 
 for-range读取Channel：
 > 遍历获取Channel中管道中的数据, 对于无缓冲通道，for range会在每次接收操作时阻塞，直到其他协程向通道写入数据；对于有缓冲通道，会读取缓冲区的所有
@@ -79,7 +85,11 @@ select：
 - select配合for，可实现循环无限监测管道，直到退出，配合time.After设置超时，可实现超时退出，通过break跳出for循环；
 - select{}语句中什么case都没有，主协程会无限等待；
 
-Go Channel的实现？
+Channel的几种使用场景：
+- 停止信号
+- 超时控制、定时执行某个任务
+- goroutine并发数控制
+- 生产者消费者模型
 
 ### 锁
 
