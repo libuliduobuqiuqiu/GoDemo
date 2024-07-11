@@ -35,3 +35,14 @@ func TestJudegeMainPerson(t *testing.T) {
 func TestJudgeList(t *testing.T) {
 	JudgeList(nil)
 }
+
+func ReturnStruct() (data MainPerson) {
+	fmt.Printf("%p\n", &data)
+	return
+}
+
+func TestReturnStruct(t *testing.T) {
+	data := ReturnStruct()
+	fmt.Printf("%p\n", &data)
+	return
+}

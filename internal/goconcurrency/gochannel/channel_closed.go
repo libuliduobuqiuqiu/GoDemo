@@ -46,6 +46,7 @@ func consumer(ch <-chan string, wg *sync.WaitGroup) {
 	}
 }
 
+// N个producer 1个consumer
 func UseProducerConsumer() {
 	wg := &sync.WaitGroup{}
 	closedCh = make(chan struct{})

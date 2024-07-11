@@ -49,3 +49,7 @@ func TestUseChannelTimer(t *testing.T) {
 func TestUseProducerConsumer(t *testing.T) {
 	gochannel.UseProducerConsumer()
 }
+
+func TestUseChannelClosedGracefully(t *testing.T) {
+	gochannel.UseChannelClosedGracefully()
+}
