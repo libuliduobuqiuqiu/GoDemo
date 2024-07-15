@@ -53,3 +53,7 @@ func TestUseProducerConsumer(t *testing.T) {
 func TestUseChannelClosedGracefully(t *testing.T) {
 	gochannel.UseChannelClosedGracefully()
 }
+
+func TestUseChannelRange(t *testing.T) {
+	gochannel.UseChannelRange()
+}

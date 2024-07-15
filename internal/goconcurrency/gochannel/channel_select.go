@@ -3,6 +3,8 @@ package gochannel
 import (
 	"fmt"
 	"time"
+
+	"github.com/go-faker/faker/v4"
 )
 
 func UseChannelSelect() {
@@ -42,4 +44,24 @@ func UseChannelDone() {
 			return
 		}
 	}
+}
+
+func UseChannelRange() {
+	ch := make(chan string)
+
+	go func() {
+		for i := 0; i < 10; i++ {
+			data := faker.ChineseName()
+			ch <- data
+			time.Sleep(1 * time.Second)
+		}
+		fmt.Println("ch is closed")
+		close(ch)
+	}()
+
+	for data := range ch {
+		fmt.Println(data)
+	}
+
+	fmt.Println("Done")
 }
