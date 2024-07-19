@@ -35,15 +35,57 @@ slice作为函数参数传递：
 
 ### map
 > map的任务就是设计一种数据结构用来维护一个集合的数据，并且可以对数据进行增删改查；最主要的数据结构：哈希查找表（Hash Map），搜索树（Search Tree）。
+
+几个问题：什么是哈希查找表？什么是哈希冲突？怎么解决哈希冲突？
 - 哈希查找表就是通过哈希函数将不同键映射到不同索引上。这要求哈希函数输出范围大于输入范围，但在现实，键的数量远远大于映射的范围；
 - 哈希冲突指的就是当不同的键通过哈希函数，映射到同一个bucket上。解决哈希冲突的主要方式：开放寻址法、链表法；
 - Go采用的是哈希查找表，通过链表法解决冲突，链表法就是将一个bucket实现成一个链表，落入同一个bucket中的key都会插入这个链表；
 
+关于带comma，和不带comma的map读取方式：
+- 带comma的map读取，会返回一个对应value类型的零值和一个bool型变量提示是否在map中。
+- 不带comma的map读取，只会返回一个对应value类型的零值。
+- 之所以go支持这两语法，因为编译器会在分析代码之后，将两种语法映射到不同的函数;另外根据key的不同类型，编译器也会将查找、插入、删除替换成不同函数处理，优化处理效率。
+
+go语言使用多个数据结构组合表示map，map中最核心的结构就是hmap
+```go
+type hmap struct {
+	count     int
+	flags     uint8
+	B         uint8
+	noverflow uint16
+	hash0     uint32
+
+	buckets    unsafe.Pointer
+	oldbuckets unsafe.Pointer
+	nevacuate  uintptr
+
+	extra *mapextra
+}
+
+type mapextra struct {
+	overflow    *[]*bmap
+	oldoverflow *[]*bmap
+	nextOverflow *bmap
+}
+```
+
+#### map 遍历
+> 简单来说，map的遍历过程，就是遍历所有的bucket，以及后面挂的overflow bucket，遍历所有bucket中的cell，将含有key的cell去除key和value。
+
+当map发生扩容时？
+> 当map出现扩容的情况，由于扩容过程不是原子操作，最多搬运两次，此时map处于中间态，有可能存在部分元素还在旧bucket，部分元素在新bucket。此时golang遍历应该如何处理这种情况？
+
+当map出现正在扩容的情况，遍历从新的bucket序号顺序开始进行，碰到老的bucket未搬迁的情况，会在老bucket中找到将要搬迁的新key。
+
+#### map 赋值
+> 通过对key计算出hash值，根据hash值计算出赋值的位置（插入新key或者更新老key），对相应位置进行赋值。流程核心在于双循环，外层循环遍历bucket和overflow bucket，内存层循环遍历整个bucekt的各个cell。(赋值过程还会考虑是否出现并发写的情况，以及是否正在扩容情况)
+
+#### map 删除
+
+
 Map的底层实现? 
-哈希函数?
 扩容策略?
 查找性能?
-碰撞？
 
 ### interface
 动态语言的特点
