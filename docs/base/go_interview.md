@@ -46,7 +46,7 @@ slice作为函数参数传递：
 - 不带comma的map读取，只会返回一个对应value类型的零值。
 - 之所以go支持这两语法，因为编译器会在分析代码之后，将两种语法映射到不同的函数;另外根据key的不同类型，编译器也会将查找、插入、删除替换成不同函数处理，优化处理效率。
 
-go语言使用多个数据结构组合表示map，map中最核心的结构就是hmap
+go语言使用多个数据结构组合表示map，map中最核心的结构就是runtime.hmap
 ```go
 type hmap struct {
 	count     int
@@ -68,6 +68,32 @@ type mapextra struct {
 	nextOverflow *bmap
 }
 ```
+备注：
+- count 表示哈希表的中的元素数量
+- B 表示持有buckets的数量，但是因为哈希表中的桶的数量是2的倍数，所以该字段会存储对数，也就是len(buckets) == 2^B;
+- hash0是哈希种子，引入随机性，创建函数时确定，调用哈希函数作为参数传入；
+- oldbuckets是哈希扩容时用于保存之前buckets字段，大小是当前buckets的一半；
+
+哈希表runtime.hmap的桶是runtime.bmap，buckets是一个指针，指向bmap结构体：
+```go
+type bmap struct {
+	tophash [bucketCnt]uint8
+}
+```
+这部分是表面结构，编译期间会加料，动态的创建一个新的结构体：
+```go
+type bmap struct {
+    topbits  [8]uint8
+    keys     [8]keytype
+    values   [8]valuetype
+    pad      uintptr
+    overflow uintptr
+}
+```
+备注：
+- 桶中最多装8个key;
+- 根据key经过哈希计算之后，如果哈希结果是“一类”的，就会落入一个桶中，然后根据计算出来的hash值的高八位，决定key落入桶的哪个位置；
+
 
 #### map 遍历
 > 简单来说，map的遍历过程，就是遍历所有的bucket，以及后面挂的overflow bucket，遍历所有bucket中的cell，将含有key的cell去除key和value。
@@ -82,10 +108,54 @@ type mapextra struct {
 
 #### map 删除
 
+删除流程:
+- 检查flags标志，判断写标志是否为1，表示其他协程正在对这个map进行写操作，直接panic。
+- 计算key的哈希值，找到落入的bucket。检查此map如果正在扩容操作，直接进行一次搬迁操作。
+- 同样是两层循环，核心是找到key的具体位置，找到对应位置，对key或者value进行“清零”操作。
+- 最后将hmap的count减一，将对应位置的tophash值置成nil。
 
-Map的底层实现? 
-扩容策略?
-查找性能?
+#### map 扩容
+> 使用哈希表的意义就是为了快速定位查找到key，向map中添加越来越多key之后，发生碰撞的概率也就越来越大，bucket中的8个cell逐渐被填满，查找、插入、删除的效率会降低。
+
+装载因子：
+```
+loadFactor := count / 2^B
+```
+count: map的元素个数，2^B表示bucket数量
+
+触发扩容条件：
+- 装载因子超过默认阈值6.5
+- overflow的buckets数量过多：当B小于15，bucket总数小于2^15时，overflow bucket数量超过2^B;
+当B大于等于15，bucket总数大于等于2^15时，如果overflow bucket数量超过2^15；
+
+针对两种扩容条件不同的扩容机制：
+- 装载因子超过阈值，本质是装不下了，所以需要将桶的数量翻倍，然后进行迁移。（迁移过程中是在map进行写操作增量进行，减少性能的瞬时抖动；
+- overflow bucket过多，本质是上为了重新整理，减少链表。等量扩容完成之后，key都集中到了一个bucket，更加紧凑，提高了查找效率；
+
+#### 额外问题
+
+1. 为什么map是无序的？
+> map中的key可能因为扩容操作，导致不在原来的位置，当按照原来的顺序遍历bucket，按照顺序遍历key时，就会出现无序的情况。而在Go中，Go直接在遍历过程中，
+并不是在固定序号的bucket开始遍历，是从一个随机值序号的bucket进行遍历，并且从bucket一个随机序号的cell开始遍历，所以就算hard code写死map，每次遍历过程
+也会出现不一样顺序的结果。
+
+2. float类型可以作为map的key吗？
+> Go中只要是可以比较的类型都能作为map的key。float也可以作为map的key，但是由于精度的问题，可能会出现一些比较诡异的问题，所以使用需要谨慎。
+
+3. 可以边遍历map边删除么？
+> Go中map并不是一个线程安全的结构，所以不支持并发同步时读写，会直接触发panic。但是如果在同一个协程中边遍历边删除，并不会检测到同时读写。但是由于删除key时间不同，可能导致遍历的结果也出现差异。
+一般这种问题可以通过读写锁sync.RWMuetex，或者sync.Map。
+
+4. 可以对map的元素进行取址？
+> 通过正常方式是没办法无法对key、value进行取址，没办法编译运行。但是可以通过unsafe.Pointer获取，但是这种获取方式一旦map发生扩容，map的key和value的地址都会发生改变失效。
+
+5. 如何判断两个map是相等的？
+- 都为nil；
+- 非空、长度相等，指向同一个map实体对象；
+- 相应的key指向value“深度”相等；
+
+6. map是否线程安全？
+> map不是线程安全，map结构体中有个字段是写标志位，在查找、赋值、删除时，写标志位为1时，直接panic。当写标志复位之后才能继续之后的操作。
 
 ### interface
 动态语言的特点
