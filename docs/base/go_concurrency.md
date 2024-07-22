@@ -6,23 +6,43 @@
 - Mutex,RWMutex
 
 ### Goroutine
-
-进程、线程、协程之间的区别？
-
-CSP模型
-> CSP模型核心思想：不要通过共享内存进行通信，而是要通过通信共享内存；
-
-Go GMP 调度模型?
-- G(Goroutine): 协程，计算任务，需要执行的代码和上下文
-- M(Machine)：系统线程，执行实体，想要在CPU执行代码必须通过线程
-- P(Processer): 处理器, 为Goroutine和Machine的调度器
-
-GMP 调度:
-> 并发过程中如何进行调度，不同场景下的调度方式是？
-
 并发和并行之间的区别：
 - 并发指的是在一个处理器上，一段时间内执行多个任务，更加注重的是任务之间交替执行。（多个事件在同一时间间隔内交替执行）
 - 并行指的是多个处理器上同时处理多个任务（不同事件在多个实体是同时执行）
+
+Goroutine和Thread之间的区别？
+- 内存占用：创建Goroutine的栈内存消耗2KB，栈空间不够用，会自动扩容；创建Thread的栈内存消耗1MB。
+- 创建和销毁：Goroutine创建和销毁是Go runtime进行管理消耗资源小，属于用户级；Thread创建和销毁需要和操作系统进行交互，属于内核级。
+- 切换：Goroutine切换是由Go runtime进行管理，切换只需要少量的上下文信息，开销非常小；Thread切换需要保存和回复线程的上下文信息，需要较多的时间和资源。
+
+#### Go Scheduler
+> Go程序主要包含Go Program、Go Runtime，即用户程序和运行时。他们之间通过函数调用实现内存分配，垃圾回收，并发调度等功能。用户程序进行的
+系统调用都会被Runtime拦截，以此帮助它进行调度以及垃圾回收工作。一般用户程序无法直接和系统内核交换，都是通过Runtim间接交互。
+Go Scheduler是Runtime最重要的一部分，Runtime维护所有的Goroutines，并通过scheduler进行调度，goroutines和threads是独立分开，但是goroutines
+要依赖threads才能执行。
+
+GMP 调度模型:
+- G(Goroutine): 表示Goroutine，它是一个待执行的任务。
+- M(Machine)：表示操作系统的线程，它由操作系统调度器调度和管理。
+- P(Processor)：表示处理器，负责调度和管理它的Goroutine队列，将Goroutine分配给对应的M执行。(Processor的数量是GOMAXPROCS，默认为CPU核心数量)
+- GRQ：存储全局可运行的Goroutines。
+- LRQ：存储本地（P）上可运行的Goroutines。
+
+goroutine可能发生调度：
+- go关键字,创建一个新的goroutine，go scheduler会考虑调度。
+- GC，由于进行GC的Goroutine也需要在M上进行，因此肯定会发生调度。
+- 系统调用，当一个goroutine进行系统调用，会阻塞M，所以它会被调度走，其他的Goroutine会被调度上来。
+- 内存同步访问，atomic、channel、mutex操作会使goroutine阻塞，因此会被调度走。
+
+什么是M:N模型？
+> Go runtime会负责goroutine的创建和销毁，Runtime会在程序启动时，会启动M个线程（CPU执行调度单位），之后创建的N个Goroutines会在线程上
+执行。
+在同一个时刻，在一个线程上只能执行一个Goroutine，当Goroutine执行过程阻塞了，调度器会将当前的Goroutine调走，让其他Goroutine执行。
+
+什么是工作窃取？
+> Go scheduler需要保证runnable goroutines均匀分布在P上运行的M。
+
+
 
 Goroutine 数量怎么限制？能在多少个线程上运行？
 > Channel sync.WaitGroup
@@ -33,7 +53,6 @@ Go的Selec语句？Select机制？
 Goroutine 退出：
 - for-range 检测通道是否关闭
 - select-case
-
 
 ### Channel
 什么是CSP模型？
