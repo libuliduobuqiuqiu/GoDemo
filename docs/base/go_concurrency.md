@@ -21,6 +21,7 @@ Goroutine和Thread之间的区别？
 Go Scheduler是Runtime最重要的一部分，Runtime维护所有的Goroutines，并通过scheduler进行调度，goroutines和threads是独立分开，但是goroutines
 要依赖threads才能执行。
 
+#### 设计原理
 GMP 调度模型:
 - G(Goroutine): 表示Goroutine，它是一个待执行的任务。
 - M(Machine)：表示操作系统的线程，它由操作系统调度器调度和管理。
@@ -41,8 +42,33 @@ goroutine可能发生调度：
 
 什么是工作窃取？
 > Go scheduler需要保证runnable goroutines均匀分布在P上运行的M。
+M需要绑定P，获取P的LRQ上的Goroutine，然后才能执行。当M上出现系统调用阻塞，P会释放和M的绑定，找到其他可用的M执行P上LRQ的Goroutine。
+当P的LRQ的Goroutine为空之后，并且这是GRQ上也没有Goroutine，P会从其他P的LRQ上“偷取”一半的G。
+(当系统调用阻塞时M才会解绑P；而当非阻塞I/O，比如一些网络I/O，会有Net Poller处理，会将I/O操作注册到事件通知机制中，Net Poller会异步等待
+这些事件完成，不会阻塞当前Goroutine或M，当网络事件完成后Net poller会将Goroutine注入到GRQ，P会调度一个空闲的M执行。)
+
+什么是抢占式调度？
 
 
+#### 源码阅读
+
+调度启动（初始化）：
+- 设置maxmcount=10000,Go能够创建的最大线程，获取GOMAXPROCS环境变量。
+- 根据GOMAXPROCS环境变量，调用runtime.procsize更新程序中的处理器数量。
+- 调用runtime.procsize是初始化的最后一步，调度器在这之后完成响应数量处理器启动，等待用户创建的
+Goroutine并为Goroutine调度处理器资源。
+
+runtime.procsize:
+1. 如果全局变量 allp 切片中的处理器数量少于期望数量，会对切片进行扩容；
+2. 使用 new 创建新的处理器结构体并调用 runtime.p.init 初始化刚刚扩容的处理器；
+3. 通过指针将线程 m0 和处理器 allp[0] 绑定到一起；
+4. 调用 runtime.p.destroy 释放不再使用的处理器结构；
+5. 通过截断改变全局变量 allp 的长度保证与期望处理器数量相等；
+6. 将除 allp[0] 之外的处理器 P 全部设置成 _Pidle 并加入到全局的空闲队列中；
+(初始化处理器，保证处理器队列和期望处理器数量相等，绑定m0和处理器allp[0]，将除allp[0]之外的处理器放入全局的空闲队列中)
+
+
+#### 额外问题
 
 Goroutine 数量怎么限制？能在多少个线程上运行？
 > Channel sync.WaitGroup
@@ -50,9 +76,28 @@ Goroutine 数量怎么限制？能在多少个线程上运行？
 Go的Selec语句？Select机制？
 > Select监听Channel，每个case是一个事件，如果所有case事件阻塞会执行default语句逻辑
 
-Goroutine 退出：
-- for-range 检测通道是否关闭
-- select-case
+关于调度的陷阱：
+> Go是基于协作的抢占式调度，对于Go语言中运行时间过长的goroutine，Go scheduler有一个线程持续监控，发现goroutine运行超过10ms，
+设置goroutine的“抢占式标志位”，调度器会进行处理。但是设置抢占式标志位只能在函数的“序言”部分，对于不是函数的就没有办法。
+
+```go
+func main() {
+	var x = 0
+	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
+		fmt.Println(i)
+		go func() {
+			for {
+				x++
+			}
+		}()
+	}
+
+	fmt.Println("hello,world")
+}
+```
+按照协作式调度的方法，启动和CPU核心相等的goroutine，goroutine无限循环。这样可能导致M和P都被占满了，一直无限循环。
+其他的Goroutine想要执行，会一直等待，出现饥饿。
+
 
 ### Channel
 什么是CSP模型？
