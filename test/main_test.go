@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"unsafe"
 )
@@ -88,4 +89,18 @@ func TestSliceSend(t *testing.T) {
 	b := ChangeSlice(a)
 	fmt.Println(a, b)
 	fmt.Println(len(a), cap(a))
+}
+
+func TestRange(t *testing.T) {
+
+	wg := &sync.WaitGroup{}
+	values := []string{"zhangsan", "wangwu"}
+	for _, i := range values {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Println(i)
+		}()
+	}
+	wg.Wait()
 }

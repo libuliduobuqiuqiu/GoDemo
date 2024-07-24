@@ -5,7 +5,12 @@
 - Channel
 - Mutex,RWMutex
 
-### Goroutine
+### Go Scheduler
+> Go程序主要包含Go Program、Go Runtime，即用户程序和运行时。他们之间通过函数调用实现内存分配，垃圾回收，并发调度等功能。用户程序进行的
+系统调用都会被Runtime拦截，以此帮助它进行调度以及垃圾回收工作。一般用户程序无法直接和系统内核交换，都是通过Runtim间接交互。
+Go Scheduler是Runtime最重要的一部分，Runtime维护所有的Goroutines，并通过scheduler进行调度，goroutines和threads是独立分开，但是goroutines
+要依赖threads才能执行。
+
 并发和并行之间的区别：
 - 并发指的是在一个处理器上，一段时间内执行多个任务，更加注重的是任务之间交替执行。（多个事件在同一时间间隔内交替执行）
 - 并行指的是多个处理器上同时处理多个任务（不同事件在多个实体是同时执行）
@@ -14,12 +19,6 @@ Goroutine和Thread之间的区别？
 - 内存占用：创建Goroutine的栈内存消耗2KB，栈空间不够用，会自动扩容；创建Thread的栈内存消耗1MB。
 - 创建和销毁：Goroutine创建和销毁是Go runtime进行管理消耗资源小，属于用户级；Thread创建和销毁需要和操作系统进行交互，属于内核级。
 - 切换：Goroutine切换是由Go runtime进行管理，切换只需要少量的上下文信息，开销非常小；Thread切换需要保存和回复线程的上下文信息，需要较多的时间和资源。
-
-#### Go Scheduler
-> Go程序主要包含Go Program、Go Runtime，即用户程序和运行时。他们之间通过函数调用实现内存分配，垃圾回收，并发调度等功能。用户程序进行的
-系统调用都会被Runtime拦截，以此帮助它进行调度以及垃圾回收工作。一般用户程序无法直接和系统内核交换，都是通过Runtim间接交互。
-Go Scheduler是Runtime最重要的一部分，Runtime维护所有的Goroutines，并通过scheduler进行调度，goroutines和threads是独立分开，但是goroutines
-要依赖threads才能执行。
 
 #### 设计原理
 GMP 调度模型:
@@ -86,7 +85,6 @@ Goroutine放到全局队列中，M继续从P中找其他的Goroutine执行。
 4. 被抢占的P再次调过来会继续原来的执行流。
 
 #### 源码阅读
-
 调度启动（初始化）：
 - 设置maxmcount=10000,Go能够创建的最大线程，获取GOMAXPROCS环境变量。
 - 根据GOMAXPROCS环境变量，调用runtime.procsize更新程序中的处理器数量。
@@ -104,7 +102,6 @@ runtime.procsize:
 
 
 #### 额外问题
-
 Goroutine 数量怎么限制？能在多少个线程上运行？
 > Channel sync.WaitGroup
 
@@ -166,26 +163,6 @@ Channel的几种使用场景：
 - 超时控制、定时执行某个任务
 - goroutine并发数控制
 - 生产者消费者模型
-
-### 锁
-
-Go的几种锁（使用场景）：
-- 互斥锁(sync.Mutex)
-- 读写锁(sync.RWMutex)-写时不可读、读时不可写、不可并发写、可以并发读
-- sync.Map(并发安全的底层原理)
-
-
-
-数据竞争如何解决？
-> 锁、Channel、CAS操作
-
-原子操作，CAS算法
-
-### WaitGroup
-
-并发场景：
-- 限制主协程在所有协程完成后才能执行；(sync.WaitGroup)
-- 内部实现就是计数器+信号量，协程开始时Add初始化信号量，结束后调用Done，计数-1，直到减为0，主协程会调用Wait一直阻塞等待计数为0时，才会被唤醒；
 
 ### Context
 Context使用场景?
@@ -310,7 +287,27 @@ func UseTimerCtx() {
 	wg.Wait()
 }
 ```
-### sync
-> sync标准库提供一些有关并发过程使用的各种工具，sync.Once：懒加载，sync.Pool：对象复用，sync.Map：并发安全的Map，sync/atomic：原子操作;
+
+### 同步原语与锁
+> Go在sync包里面提供了基本的原语sync.Mutex:锁,sync.RWMutex:读写锁,sync.WaitGroup:等待组,sync.Cond:同步条件通知,sync.Once:懒加载，
+sync.Pool:对象复用，sync.Map:并发安全的Map，sync/atomic:原子操作;
+
+### 锁
+Go的几种锁（使用场景）：
+- 互斥锁(sync.Mutex)
+- 读写锁(sync.RWMutex)-写时不可读、读时不可写、不可并发写、可以并发读
+- sync.Map(并发安全的底层原理)
+
+数据竞争如何解决？
+> 锁、Channel、CAS操作
+
+原子操作，CAS算法
+
+### WaitGroup
+
+并发场景：
+- 限制主协程在所有协程完成后才能执行；(sync.WaitGroup)
+- 内部实现就是计数器+信号量，协程开始时Add初始化信号量，结束后调用Done，计数-1，直到减为0，主协程会调用Wait一直阻塞等待计数为0时，才会被唤醒；
+
 
 
