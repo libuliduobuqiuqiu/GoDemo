@@ -47,8 +47,43 @@ M需要绑定P，获取P的LRQ上的Goroutine，然后才能执行。当M上出�
 (当系统调用阻塞时M才会解绑P；而当非阻塞I/O，比如一些网络I/O，会有Net Poller处理，会将I/O操作注册到事件通知机制中，Net Poller会异步等待
 这些事件完成，不会阻塞当前Goroutine或M，当网络事件完成后Net poller会将Goroutine注入到GRQ，P会调度一个空闲的M执行。)
 
-什么是抢占式调度？
+协作式调度和抢占式调度？
+> 协作式调度依靠调度方主动弃权；抢占式调度依靠调度器强制将被调方被动中断。
 
+基于协作的抢占式调度：
+1. 编译器会在被调函数前插入runtime.morestack(抢占标志检测)；
+2. Go语言会在运行时，会在垃圾回收暂停程序、系统监控发现Goroutine运行超过10ms，会设置Goroutine的stackguard0为StackPreempt(抢占标志位);
+3. 在发生函数调用时，可能会执行runtime.morestack，它调用的runtime.newstack会检测Goroutine的stackguard0字段是否为StackPreempt；
+4. 如果是StackPreempt则触发抢占让出线程；
+(这里的函数检测是编译器插入的，但是需要函数调用作为入口触发抢占，所以这算是一个协作式的抢占调度？)
+
+#### 基于信号的抢占式调度
+> 在以往的基于协作的抢占式调度只有在函数调用离设置抢占标志位，对于不是函数就没有办法。如果是一个纯算法循环计算，Go调度器就没办法，可能还是
+会出现饥饿的问题。
+```go
+func main() {
+	var x = 0
+	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
+		fmt.Println(i)
+		go func() {
+			for {
+				x++
+			}
+		}()
+	}
+
+	fmt.Println("hello,world")
+}
+```
+按照协作式调度的方法，启动和CPU核心相等的goroutine，goroutine无限循环。这样可能导致M和P都被占满了，一直无限循环。
+其他的Goroutine想要执行，会一直等待，出现饥饿。
+
+基于信号的抢占式调度流程：
+1. M注册一个SIGURG信号处理的函数：sighandler。
+2. sysmon启动间隔性性能监控，发现超过Goroutine运行超过10ms，向M发送抢占信号。
+3. M接收到信号之后，内核中断器执行的代码，执行注册信号处理函数，将当前Goroutine的状态从_Grunning改成Grunnable，把抢占的
+Goroutine放到全局队列中，M继续从P中找其他的Goroutine执行。
+4. 被抢占的P再次调过来会继续原来的执行流。
 
 #### 源码阅读
 
@@ -75,29 +110,6 @@ Goroutine 数量怎么限制？能在多少个线程上运行？
 
 Go的Selec语句？Select机制？
 > Select监听Channel，每个case是一个事件，如果所有case事件阻塞会执行default语句逻辑
-
-关于调度的陷阱：
-> Go是基于协作的抢占式调度，对于Go语言中运行时间过长的goroutine，Go scheduler有一个线程持续监控，发现goroutine运行超过10ms，
-设置goroutine的“抢占式标志位”，调度器会进行处理。但是设置抢占式标志位只能在函数的“序言”部分，对于不是函数的就没有办法。
-
-```go
-func main() {
-	var x = 0
-	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
-		fmt.Println(i)
-		go func() {
-			for {
-				x++
-			}
-		}()
-	}
-
-	fmt.Println("hello,world")
-}
-```
-按照协作式调度的方法，启动和CPU核心相等的goroutine，goroutine无限循环。这样可能导致M和P都被占满了，一直无限循环。
-其他的Goroutine想要执行，会一直等待，出现饥饿。
-
 
 ### Channel
 什么是CSP模型？
