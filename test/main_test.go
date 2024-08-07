@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"godemo/internal/goai/coze"
 	"sync"
 	"testing"
 	"unsafe"
@@ -103,4 +104,8 @@ func TestRange(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+func TestGetCwd(t *testing.T) {
+	coze.UseCozeChat()
 }

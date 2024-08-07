@@ -16,6 +16,7 @@ require (
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.5
+	github.com/sirupsen/logrus v1.8.1
 	github.com/smartystreets/goconvey v1.8.1
 	golang.org/x/crypto v0.18.0
 	golang.org/x/net v0.17.0
