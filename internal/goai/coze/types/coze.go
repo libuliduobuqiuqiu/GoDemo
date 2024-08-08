@@ -48,3 +48,14 @@ type MessageData struct {
 	Role           string `json:"role"`
 	Type           string `json:"type"`
 }
+
+type FlowMessageData struct {
+	ID             string `json:"id"`
+	ConversationID string `json:"conversation_id"`
+	BotID          string `json:"bot_id"`
+	Role           string `json:"role"`
+	Type           string `json:"type"`
+	Content        string `json:"content"`
+	ContentType    string `json:"content_type"`
+	ChatID         string `json:"chat_id"`
+}

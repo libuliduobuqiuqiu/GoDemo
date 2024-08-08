@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"godemo/internal/goai/coze"
+)
 
 func main() {
-	fmt.Println("hello, welcom to godemo project.")
+	coze.StartCozeChat()
 }
