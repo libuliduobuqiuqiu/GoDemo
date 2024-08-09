@@ -41,21 +41,23 @@ func StartCozeChat() {
 			ContentType: "text",
 			Content:     text,
 		}
+
 		additionalMessages = []types.AdditionalMessages{msg}
 		req.AdditionalMessages = additionalMessages
-
-		if cozeClient.ConversationID != "" {
-			url += fmt.Sprintf("?conversation_id=%s", cozeClient.ConversationID)
-		}
+		// additionalMessages = append(additionalMessages, msg)
+		// req.AdditionalMessages = additionalMessages
+		//
+		// if cozeClient.ConversationID != "" {
+		// 	url += fmt.Sprintf("?conversation_id=%s", cozeClient.ConversationID)
+		// }
 
 		fmt.Println("KayChat:")
 		_, err := cozeClient.Request(ctx, http.MethodPost, url, req)
-		fmt.Println(additionalMessages)
 		if err != nil {
 			log.WithError(err).Error()
 		}
 
-		cozeClient.GetChatMessage(ctx, cozeClient.ChatID, cozeClient.ConversationID)
+		// cozeClient.GetChatMessage(ctx, cozeClient.ChatID, cozeClient.ConversationID)
 
 		// var chatResp types.ChatResp
 		// if err := json.Unmarshal(resp, &chatResp); err != nil {

@@ -20,6 +20,7 @@ func (c *CozeClient) ConvertCozeRespToContent(body []byte) (completed bool) {
 	}
 
 	tmpResp := strings.Split(resp, ":")
+
 	if len(tmpResp) > 2 {
 
 		switch tmpResp[0] {

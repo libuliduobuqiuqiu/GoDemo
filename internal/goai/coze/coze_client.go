@@ -46,6 +46,7 @@ func (c *CozeClient) Request(ctx context.Context, method, url string, reqData in
 	if err != nil {
 		return
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Bearer "+Authorization)
 
@@ -55,21 +56,26 @@ func (c *CozeClient) Request(ctx context.Context, method, url string, reqData in
 	}
 
 	defer resp.Body.Close()
-
 	// 读取响应内容
 	if c.IsStream {
-		scanner := bufio.NewScanner(resp.Body)
-		for scanner.Scan() {
-			fmt.Fprintln(c, scanner.Text())
-		}
+		if method == http.MethodPost {
 
-	} else {
-		data, err = io.ReadAll(resp.Body)
-		if err != nil {
+			scanner := bufio.NewScanner(resp.Body)
+			for scanner.Scan() {
+				fmt.Fprintln(c, scanner.Text())
+			}
+
 			return
 		}
-		fmt.Println(string(data))
 	}
+
+	fmt.Println("End.")
+
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
