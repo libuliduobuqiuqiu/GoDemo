@@ -24,3 +24,7 @@ func TestReflectStruct(t *testing.T) {
 func TestReflectDeepEqual(t *testing.T) {
 	reflectdemo.BaseUseReflectDeepEqual()
 }
+
+func TestReflectImplenets(t *testing.T) {
+	reflectdemo.ReflectImplments()
+}
