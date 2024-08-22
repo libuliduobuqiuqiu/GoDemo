@@ -28,3 +28,7 @@ func TestReflectDeepEqual(t *testing.T) {
 func TestReflectImplenets(t *testing.T) {
 	reflectdemo.ReflectImplments()
 }
+
+func TestReflectChangeName(t *testing.T) {
+	reflectdemo.ReflectChangeValue()
+}

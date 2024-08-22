@@ -39,17 +39,19 @@ func HandleReflect(r interface{}) (err error) {
 
 		v := reflect.ValueOf(r)
 		temp := v.Elem()
-
 		name := temp.FieldByName("Name")
 		if name.IsValid() && name.CanSet() && name.Kind() == reflect.String {
 			name.SetString(name.String() + "_flag")
 		}
 
+		changeName := reflect.Indirect(v)
+		fmt.Println("After change name: ", changeName)
+
 		hello := v.MethodByName("Hello")
 		if hello.IsValid() {
 			hello.Call(nil)
 		}
-		fmt.Println(v.String(), v.Interface().(*SPerson))
+		fmt.Println(v.Type())
 	default:
 		fmt.Printf("不支持该%s类型对象操作", t.Kind())
 	}
