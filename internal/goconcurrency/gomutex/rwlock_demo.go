@@ -1,4 +1,4 @@
-package goconcurrency
+package gomutex
 
 import (
 	"fmt"

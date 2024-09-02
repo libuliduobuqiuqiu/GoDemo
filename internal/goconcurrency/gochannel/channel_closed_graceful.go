@@ -45,7 +45,7 @@ func receiver(id int, ch chan string, stopedCh chan struct{}) {
 		select {
 		case data := <-ch:
 			fmt.Printf("Receiver %d receive: %s successfully.\n", id, data)
-			time.Sleep(2 * time.Second)
+			time.Sleep(1 * time.Second)
 		case <-stopedCh:
 			fmt.Printf("Receiver %d closed successfully.\n", id)
 			return
@@ -54,7 +54,7 @@ func receiver(id int, ch chan string, stopedCh chan struct{}) {
 }
 
 func UseChannelClosedGracefully() {
-	toStopCh := make(chan struct{}, 1)
+	toStopCh := make(chan struct{})
 	stopedCh := make(chan struct{})
 	ch := make(chan string, 40)
 

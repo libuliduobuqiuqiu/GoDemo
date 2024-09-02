@@ -19,8 +19,6 @@ func UseChannelSelect() {
 		fmt.Println(i)
 	case j := <-chString:
 		fmt.Println(j)
-	case <-time.After(5 * time.Second):
-		fmt.Println("select exit.")
 	}
 
 	fmt.Println("Done.")

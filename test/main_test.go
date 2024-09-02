@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 	"unsafe"
 )
@@ -93,14 +92,30 @@ func TestSliceSend(t *testing.T) {
 
 func TestRange(t *testing.T) {
 
-	wg := &sync.WaitGroup{}
 	values := []string{"zhangsan", "wangwu"}
-	for _, i := range values {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			fmt.Println(i)
-		}()
+	for _, i := range values[3:] {
+		fmt.Println(i)
 	}
-	wg.Wait()
+}
+
+type person struct {
+	Name string
+	Age  int
+}
+
+func TestSliceChange(t *testing.T) {
+	pList := []person{
+		{Name: "t1", Age: 22},
+	}
+
+	for _, p := range pList {
+		p.Age = ChangePerson(p.Age)
+	}
+
+	fmt.Println(pList)
+
+}
+
+func ChangePerson(p int) int {
+	return p + 1
 }
