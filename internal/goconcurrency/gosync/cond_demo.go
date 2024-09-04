@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 var status int64
@@ -16,7 +17,7 @@ func UseSyncCond() {
 	c := sync.NewCond(&sync.Mutex{})
 
 	for i := 0; i < 10; i++ {
-		go Listener(c)
+		go Listener(i, c)
 	}
 
 	go Broadcaster(c)
@@ -27,20 +28,21 @@ func UseSyncCond() {
 	<-ch
 }
 
-func Listener(c *sync.Cond) {
+func Listener(num int, c *sync.Cond) {
 	c.L.Lock()
-
+	fmt.Println("Lock", num)
 	for atomic.LoadInt64(&status) != 1 {
+
+		fmt.Println("Listening: ", num)
 		c.Wait()
 	}
-
-	fmt.Println("Listening")
+	fmt.Println("Unlock", num)
 	c.L.Unlock()
 }
 
 func Broadcaster(c *sync.Cond) {
 	c.L.Lock()
-
+	time.Sleep(2 * time.Second)
 	atomic.StoreInt64(&status, 1)
 	c.Broadcast()
 	c.L.Unlock()

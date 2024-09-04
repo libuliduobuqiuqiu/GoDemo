@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"testing"
+	"time"
 	"unsafe"
 )
 
@@ -118,4 +119,19 @@ func TestSliceChange(t *testing.T) {
 
 func ChangePerson(p int) int {
 	return p + 1
+}
+
+func TestForPrint(t *testing.T) {
+	a := 100
+	go func() {
+		time.Sleep(2 * time.Second)
+		a = 200
+	}()
+
+	for a != 200 {
+		fmt.Println("yes,ok")
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	fmt.Println("no,i'm right")
 }
