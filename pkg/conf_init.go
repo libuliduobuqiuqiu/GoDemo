@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 )
@@ -29,13 +30,17 @@ type BaseConfig struct {
 	Port     int    `json:"port"`
 }
 
-func GetGlobalConfig() GlobalConfig {
+func GetGlobalConfig(configPath string) GlobalConfig {
+	if configPath == "" {
+		configPath = ConfigPath
+	}
+
 	var globalConfig GlobalConfig
-	if _, err := os.Stat(ConfigPath); err != nil {
+	if _, err := os.Stat(configPath); err != nil {
 		log.Fatal(err)
 	}
 
-	fileContent, err := os.ReadFile(ConfigPath)
+	fileContent, err := os.ReadFile(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,4 +49,11 @@ func GetGlobalConfig() GlobalConfig {
 		log.Fatal()
 	}
 	return globalConfig
+}
+
+func GenMysqlDSN(configPath string) string {
+	config := GetGlobalConfig(configPath)
+	mysqlConfig := config.MysqlConfig
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
+		mysqlConfig.Username, mysqlConfig.Password, mysqlConfig.Host, mysqlConfig.Port, mysqlConfig.Prefix)
 }

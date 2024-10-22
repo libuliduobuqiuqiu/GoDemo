@@ -21,7 +21,7 @@ func insertSqlByReflect() {
 	fmt.Println(sql)
 
 	// Get Global Config about mysql
-	globalConfig := pkg.GetGlobalConfig()
+	globalConfig := pkg.GetGlobalConfig("")
 	db, err := standardmysql.GetDB(globalConfig.MysqlConfig)
 
 	// Exec sql string

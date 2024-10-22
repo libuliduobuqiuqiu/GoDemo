@@ -19,7 +19,7 @@ func GetDB(config pkg.MysqlConfig) (db *sql.DB, err error) {
 }
 
 func ExecSQLStr() {
-	globalConfig := pkg.GetGlobalConfig()
+	globalConfig := pkg.GetGlobalConfig("")
 	mysqlConfig := globalConfig.MysqlConfig
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",

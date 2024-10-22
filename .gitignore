@@ -6,7 +6,7 @@
 
 company/
 
-conf.json
+*conf.json
 ai_conf.json
 
 

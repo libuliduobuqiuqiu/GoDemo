@@ -1,4 +1,4 @@
-package gormDemo
+package gormdemo
 
 import (
 	"fmt"
@@ -49,7 +49,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 
 func InitDB(flag string) (db *gorm.DB, err error) {
 
-	globalConfig := pkg.GetGlobalConfig()
+	globalConfig := pkg.GetGlobalConfig("")
 	var tmpConfig pkg.MysqlConfig
 	switch flag {
 	case "mysql":

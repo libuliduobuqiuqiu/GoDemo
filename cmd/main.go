@@ -1,9 +1,7 @@
 package main
 
-import (
-	"godemo/internal/goai/coze"
-)
+import "godemo/internal/gostorage/gormdemo"
 
 func main() {
-	coze.StartCozeChat()
+	gormdemo.ExecBookDemo()
 }

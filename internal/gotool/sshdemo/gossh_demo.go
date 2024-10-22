@@ -10,7 +10,7 @@ import (
 
 func ExecServerCommand() {
 
-	globalConfig := pkg.GetGlobalConfig()
+	globalConfig := pkg.GetGlobalConfig("")
 	config := globalConfig.SSHConfig
 
 	clientConfig := &gossh.ClientConfig{
