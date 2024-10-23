@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"godemo/pkg"
 	"log"
 
@@ -10,21 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
-var mysqlDSN string
-
 const (
 	confPath = "/data/GoDemo/configs/local_conf.json"
 )
 
-func InitLocalMysqlStr() {
-	config := pkg.GetGlobalConfig(confPath)
-	mysqlConfig := config.MysqlConfig
-	mysqlDSN = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
-		mysqlConfig.Username, mysqlConfig.Password, mysqlConfig.Host, mysqlConfig.Port, mysqlConfig.Prefix)
-}
-
 func main() {
-	InitLocalMysqlStr()
+	mysqlDSN := pkg.GenMysqlDSN(confPath)
 
 	if mysqlDSN == "" {
 		return
@@ -42,7 +32,7 @@ func main() {
 	})
 	g.UseDB(db)
 
-	g.ApplyBasic(g.GenerateAllTable()...)
+	g.ApplyBasic(g.GenerateModel("book"), g.GenerateModelAs("model", "MyModel"), g.GenerateModel("history"))
 	// g.ApplyBasic()
 
 	g.Execute()

@@ -19,12 +19,14 @@ var (
 	Q       = new(Query)
 	Book    *book
 	History *history
+	MyModel *myModel
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	Book = &Q.Book
 	History = &Q.History
+	MyModel = &Q.MyModel
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
@@ -32,6 +34,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		db:      db,
 		Book:    newBook(db, opts...),
 		History: newHistory(db, opts...),
+		MyModel: newMyModel(db, opts...),
 	}
 }
 
@@ -40,6 +43,7 @@ type Query struct {
 
 	Book    book
 	History history
+	MyModel myModel
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -49,6 +53,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		db:      db,
 		Book:    q.Book.clone(db),
 		History: q.History.clone(db),
+		MyModel: q.MyModel.clone(db),
 	}
 }
 
@@ -65,18 +70,21 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		db:      db,
 		Book:    q.Book.replaceDB(db),
 		History: q.History.replaceDB(db),
+		MyModel: q.MyModel.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
 	Book    *bookDo
 	History *historyDo
+	MyModel *myModelDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		Book:    q.Book.WithContext(ctx),
 		History: q.History.WithContext(ctx),
+		MyModel: q.MyModel.WithContext(ctx),
 	}
 }
 

@@ -1,7 +1,9 @@
 package main
 
-import "godemo/internal/gostorage/gormdemo"
+import (
+	"godemo/internal/godemo"
+)
 
 func main() {
-	gormdemo.ExecBookDemo()
+	godemo.StartByd()
 }
