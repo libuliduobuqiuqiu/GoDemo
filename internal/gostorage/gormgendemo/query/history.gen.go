@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"godemo/internal/gostorage/gormdemo/model"
+	"godemo/internal/gostorage/gormgendemo/model"
 )
 
 func newHistory(db *gorm.DB, opts ...gen.DOOption) history {

@@ -2,38 +2,24 @@ package gormdemo
 
 import (
 	"fmt"
-	"github.com/go-faker/faker/v4"
-	"github.com/pborman/uuid"
-	"gorm.io/gorm"
 	"log"
 	"strings"
-)
 
-type Company struct {
-	ID   string `gorm:"column:id" faker:"-"`
-	Code string `gorm:"column:code" faker:"word"`
-	Name string `gorm:"column:name" faker:"word"`
-}
+	"github.com/go-faker/faker/v4"
+	"godemo/internal/gostorage/gormdemo/model"
+	"gorm.io/gorm"
+)
 
 type TableStruct struct {
 	Field string `gorm:"column:Field"`
 	Type  string `gorm:"column:Type"`
 }
 
-func (c *Company) TableName() string {
-	return "company"
-}
-
-func (c *Company) BeforeCreate(tx *gorm.DB) (err error) {
-	c.ID = uuid.New()
-	return nil
-}
-
 // insertRows 批量插入
 func insertCompanyRows(db *gorm.DB) {
-	var companys []*Company
+	var companys []*model.Company
 	for i := 0; i < 10; i++ {
-		tmpCompany := Company{}
+		tmpCompany := model.Company{}
 		err := faker.FakeData(&tmpCompany)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -56,14 +42,14 @@ func insertCompanyRows(db *gorm.DB) {
 
 // SelectCompanyRows 查询单表后更新
 func SelectCompanyRows(db *gorm.DB) {
-	var codes []Company
+	var codes []*model.Company
 
-	result := db.Model(&Company{}).Find(&codes)
+	result := db.Model(&model.Company{}).Find(&codes)
 	fmt.Println(codes)
 	fmt.Println(result.Error, result.RowsAffected)
 
-	var users []*User
-	db.Model(&User{}).Find(&users)
+	var users []*model.User
+	db.Model(&model.User{}).Find(&users)
 
 	for k, user := range users {
 		user.CompanyID = codes[k%len(codes)].Code
@@ -72,7 +58,7 @@ func SelectCompanyRows(db *gorm.DB) {
 
 	for _, tmpUser := range users {
 		fmt.Println(tmpUser)
-		result = db.Model(&User{}).Where("id = ?", tmpUser.ID).Updates(tmpUser)
+		result = db.Model(&model.User{}).Where("id = ?", tmpUser.ID).Updates(tmpUser)
 		fmt.Println(result.Error, result.RowsAffected)
 	}
 

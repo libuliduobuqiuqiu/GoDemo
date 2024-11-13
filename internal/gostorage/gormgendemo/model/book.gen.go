@@ -15,6 +15,7 @@ type Book struct {
 	Book  string    `gorm:"column:book;primaryKey;comment:book name" json:"book"`  // book name
 	Price int32     `gorm:"column:price;not null;comment:book price" json:"price"` // book price
 	CTime time.Time `gorm:"column:c_time" json:"c_time"`
+	Nums  int32     `gorm:"column:nums" json:"nums"`
 }
 
 // TableName Book's table name

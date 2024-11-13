@@ -13,9 +13,9 @@ type GlobalConfig struct {
 	SSHConfig      BaseConfig  `json:"ssh"`
 	F5Config       BaseConfig  `json:"f5"`
 	FTPConfig      BaseConfig  `json:"ftp"`
-	MysqlConfig    MysqlConfig `json:"mysql"`
-	CompanyMysql   MysqlConfig `json:"company"`
-	Company57Mysql MysqlConfig `json:"company57"`
+	MysqlConfig    MysqlConfig `json:"mysql,omiempty"`
+	CompanyMysql   MysqlConfig `json:"company,omiempty"`
+	Company57Mysql MysqlConfig `json:"company57,omiempty"`
 }
 
 type MysqlConfig struct {

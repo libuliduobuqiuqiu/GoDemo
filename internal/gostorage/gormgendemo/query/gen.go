@@ -18,6 +18,7 @@ import (
 var (
 	Q       = new(Query)
 	Book    *book
+	Device  *device
 	History *history
 	MyModel *myModel
 )
@@ -25,6 +26,7 @@ var (
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	Book = &Q.Book
+	Device = &Q.Device
 	History = &Q.History
 	MyModel = &Q.MyModel
 }
@@ -33,6 +35,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:      db,
 		Book:    newBook(db, opts...),
+		Device:  newDevice(db, opts...),
 		History: newHistory(db, opts...),
 		MyModel: newMyModel(db, opts...),
 	}
@@ -42,6 +45,7 @@ type Query struct {
 	db *gorm.DB
 
 	Book    book
+	Device  device
 	History history
 	MyModel myModel
 }
@@ -52,6 +56,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:      db,
 		Book:    q.Book.clone(db),
+		Device:  q.Device.clone(db),
 		History: q.History.clone(db),
 		MyModel: q.MyModel.clone(db),
 	}
@@ -69,6 +74,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:      db,
 		Book:    q.Book.replaceDB(db),
+		Device:  q.Device.replaceDB(db),
 		History: q.History.replaceDB(db),
 		MyModel: q.MyModel.replaceDB(db),
 	}
@@ -76,6 +82,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 
 type queryCtx struct {
 	Book    *bookDo
+	Device  *deviceDo
 	History *historyDo
 	MyModel *myModelDo
 }
@@ -83,6 +90,7 @@ type queryCtx struct {
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		Book:    q.Book.WithContext(ctx),
+		Device:  q.Device.WithContext(ctx),
 		History: q.History.WithContext(ctx),
 		MyModel: q.MyModel.WithContext(ctx),
 	}

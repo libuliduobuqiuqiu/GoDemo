@@ -1,8 +1,8 @@
-package gormdemo
+package gormgendemo
 
 import (
 	"fmt"
-	"godemo/internal/gostorage/gormdemo/query"
+	"godemo/internal/gostorage/gormgendemo/query"
 	"godemo/pkg"
 	"log"
 

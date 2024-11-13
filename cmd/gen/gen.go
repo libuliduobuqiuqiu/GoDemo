@@ -27,12 +27,17 @@ func main() {
 	}
 
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "../../internal/gostorage/gormdemo/query",
+		OutPath: "../../internal/gostorage/gormgendemo/query",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery,
 	})
 	g.UseDB(db)
 
-	g.ApplyBasic(g.GenerateModel("book"), g.GenerateModelAs("model", "MyModel"), g.GenerateModel("history"))
+	g.ApplyBasic(
+		g.GenerateModel("book"),
+		g.GenerateModelAs("model", "MyModel"),
+		g.GenerateModel("history"),
+		g.GenerateModel("device"))
+	// g.ApplyBasic(g.GenerateModel("book"), g.GenerateModel("history"))
 	// g.ApplyBasic()
 
 	g.Execute()

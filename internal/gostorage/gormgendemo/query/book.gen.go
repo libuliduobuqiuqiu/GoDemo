@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"godemo/internal/gostorage/gormdemo/model"
+	"godemo/internal/gostorage/gormgendemo/model"
 )
 
 func newBook(db *gorm.DB, opts ...gen.DOOption) book {
@@ -30,6 +30,7 @@ func newBook(db *gorm.DB, opts ...gen.DOOption) book {
 	_book.Book = field.NewString(tableName, "book")
 	_book.Price = field.NewInt32(tableName, "price")
 	_book.CTime = field.NewTime(tableName, "c_time")
+	_book.Nums = field.NewInt32(tableName, "nums")
 
 	_book.fillFieldMap()
 
@@ -43,6 +44,7 @@ type book struct {
 	Book  field.String // book name
 	Price field.Int32  // book price
 	CTime field.Time
+	Nums  field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -62,6 +64,7 @@ func (b *book) updateTableName(table string) *book {
 	b.Book = field.NewString(table, "book")
 	b.Price = field.NewInt32(table, "price")
 	b.CTime = field.NewTime(table, "c_time")
+	b.Nums = field.NewInt32(table, "nums")
 
 	b.fillFieldMap()
 
@@ -78,10 +81,11 @@ func (b *book) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (b *book) fillFieldMap() {
-	b.fieldMap = make(map[string]field.Expr, 3)
+	b.fieldMap = make(map[string]field.Expr, 4)
 	b.fieldMap["book"] = b.Book
 	b.fieldMap["price"] = b.Price
 	b.fieldMap["c_time"] = b.CTime
+	b.fieldMap["nums"] = b.Nums
 }
 
 func (b book) clone(db *gorm.DB) book {

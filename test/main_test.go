@@ -2,8 +2,8 @@ package test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
-	"time"
 	"unsafe"
 )
 
@@ -123,15 +123,5 @@ func ChangePerson(p int) int {
 
 func TestForPrint(t *testing.T) {
 	a := 100
-	go func() {
-		time.Sleep(2 * time.Second)
-		a = 200
-	}()
-
-	for a != 200 {
-		fmt.Println("yes,ok")
-		time.Sleep(500 * time.Millisecond)
-	}
-
-	fmt.Println("no,i'm right")
+	fmt.Println(strconv.Itoa(a))
 }
