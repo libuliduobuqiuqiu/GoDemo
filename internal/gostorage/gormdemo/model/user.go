@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const UserTableName = "users"
+
 type User struct {
 	ID          string  `gorm:"primaryKey,column:id" faker:"-"`
 	Email       string  `gorm:"column:email" faker:"email"`

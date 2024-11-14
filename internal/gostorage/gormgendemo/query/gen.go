@@ -21,6 +21,7 @@ var (
 	Device  *device
 	History *history
 	MyModel *myModel
+	User    *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -29,6 +30,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	Device = &Q.Device
 	History = &Q.History
 	MyModel = &Q.MyModel
+	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
@@ -38,6 +40,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		Device:  newDevice(db, opts...),
 		History: newHistory(db, opts...),
 		MyModel: newMyModel(db, opts...),
+		User:    newUser(db, opts...),
 	}
 }
 
@@ -48,6 +51,7 @@ type Query struct {
 	Device  device
 	History history
 	MyModel myModel
+	User    user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -59,6 +63,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		Device:  q.Device.clone(db),
 		History: q.History.clone(db),
 		MyModel: q.MyModel.clone(db),
+		User:    q.User.clone(db),
 	}
 }
 
@@ -77,6 +82,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		Device:  q.Device.replaceDB(db),
 		History: q.History.replaceDB(db),
 		MyModel: q.MyModel.replaceDB(db),
+		User:    q.User.replaceDB(db),
 	}
 }
 
@@ -85,6 +91,7 @@ type queryCtx struct {
 	Device  *deviceDo
 	History *historyDo
 	MyModel *myModelDo
+	User    *userDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
@@ -93,6 +100,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		Device:  q.Device.WithContext(ctx),
 		History: q.History.WithContext(ctx),
 		MyModel: q.MyModel.WithContext(ctx),
+		User:    q.User.WithContext(ctx),
 	}
 }
 

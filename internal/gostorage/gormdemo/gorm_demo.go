@@ -3,11 +3,9 @@ package gormdemo
 import (
 	"fmt"
 	"godemo/internal/gostorage/gormdemo/model"
-	"godemo/pkg"
 	"log"
 
 	"github.com/go-faker/faker/v4"
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -23,28 +21,6 @@ func printRecords(u []*model.User, result *gorm.DB) {
 	}
 	fmt.Println(result.Error, result.RowsAffected)
 
-}
-
-func InitGormDB(flag string) (db *gorm.DB, err error) {
-
-	globalConfig := pkg.GetGlobalConfig("")
-	var tmpConfig pkg.MysqlConfig
-	switch flag {
-	case "mysql":
-		tmpConfig = globalConfig.MysqlConfig
-	case "company":
-		tmpConfig = globalConfig.CompanyMysql
-	case "company57":
-		tmpConfig = globalConfig.Company57Mysql
-	default:
-		return nil, fmt.Errorf("无法识别需要查询那个数据库")
-	}
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4",
-		tmpConfig.Username, tmpConfig.Password, tmpConfig.Host,
-		tmpConfig.Port, tmpConfig.Prefix)
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	return
 }
 
 // insertOneRow 单挑记录插入

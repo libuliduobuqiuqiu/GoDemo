@@ -36,7 +36,9 @@ func main() {
 		g.GenerateModel("book"),
 		g.GenerateModelAs("model", "MyModel"),
 		g.GenerateModel("history"),
-		g.GenerateModel("device"))
+		g.GenerateModel("device"),
+		g.GenerateModel("users"),
+	)
 	// g.ApplyBasic(g.GenerateModel("book"), g.GenerateModel("history"))
 	// g.ApplyBasic()
 
