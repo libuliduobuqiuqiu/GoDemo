@@ -11,5 +11,14 @@ func TestCompressZipFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestUnCompressZipFile(t *testing.T) {
+	zipPath := "/data/Bak/ebook.zip"
+	bakPath := "/data/Bak/"
+	err := godemo.UnCompressZip(zipPath, bakPath)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 }
