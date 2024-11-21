@@ -6,10 +6,16 @@ import (
 	"testing"
 )
 
-func TestGormFind(t *testing.T) {
+func TestGormFindUser1(t *testing.T) {
+	if err := dao.ListUsersByTableName(); err != nil {
+		t.Fatal(err)
+	}
+}
 
-	dao.ListUsers()
-
+func TestGormFindUser2(t *testing.T) {
+	if err := dao.ListUsersByNotTableName(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestGormGenFind(t *testing.T) {

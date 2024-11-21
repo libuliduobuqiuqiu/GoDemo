@@ -15,5 +15,6 @@ func InitDB() (db *gorm.DB, err error) {
 		config.Password, config.Host, config.Port, config.Prefix)
 
 	db, err = gorm.Open(mysql.Open(dsn))
+	db = db.Debug()
 	return
 }
