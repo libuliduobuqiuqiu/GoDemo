@@ -1,4 +1,4 @@
-package godemo
+package compressdemo
 
 import (
 	"archive/zip"

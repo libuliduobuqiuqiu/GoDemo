@@ -20,3 +20,11 @@ func TestHandleFile(t *testing.T) {
 		t.Fatal(t)
 	}
 }
+
+func TestPrintFilePath(t *testing.T) {
+
+	if err := osdemo.PrintFilePath("/data/GoDemo/"); err != nil {
+		t.Fatal(err)
+	}
+
+}

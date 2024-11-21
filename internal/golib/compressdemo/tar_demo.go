@@ -1,4 +1,4 @@
-package godemo
+package compressdemo
 
 import (
 	"archive/tar"
@@ -7,8 +7,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
+// Tar 文件格式 [Header1][Content1][Header2][Content2]...[HeaderN][ContentN]
+// 创建Tgz压缩文件
 func CreateTGZ(srcDir string, tgzPath string) error {
 
 	tgzFile, err := os.Create(tgzPath)
@@ -28,12 +31,52 @@ func CreateTGZ(srcDir string, tgzPath string) error {
 			return err
 		}
 
+		// 计算相对路径
+		relPath, err := filepath.Rel(srcDir, path)
+		if err != nil {
+			return err
+		}
+
+		// 去除可能出现的前导分隔符..
+		relPath = strings.TrimPrefix(relPath, string(filepath.Separator))
+		fmt.Println(relPath)
+
+		// 写入头信息
+		header, err := tar.FileInfoHeader(info, path)
+		if err != nil {
+			return err
+		}
+
+		header.Name = relPath
+		if err = tarWriter.WriteHeader(header); err != nil {
+			return err
+		}
+
+		// 如果是文件，保存文件信息
+		if !info.IsDir() {
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			_, err = io.Copy(tarWriter, file)
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
+// 解压Tgz压缩文件
 func ExtractTGZ(tgzPath string, destDir string) error {
 	tgzFile, err := os.Open(tgzPath)
 	if err != nil {
