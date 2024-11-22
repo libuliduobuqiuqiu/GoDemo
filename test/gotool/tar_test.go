@@ -1,7 +1,7 @@
-package golib
+package gotool
 
 import (
-	"godemo/internal/golib/compressdemo"
+	"godemo/internal/gotool/compressdemo"
 	"testing"
 )
 
