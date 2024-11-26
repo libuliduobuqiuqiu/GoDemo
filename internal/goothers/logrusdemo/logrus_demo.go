@@ -6,21 +6,70 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
+// var log = logrus.New()
 
-func UseLogrus() {
-	writer, err := os.Create("tmp.log")
+// refer: https://github.com/rifflock/lfshook
+// About logrus hook.
+// Attempt to write log on the text file.
+type logFileHook struct {
+	file      *os.File
+	formatter logrus.Formatter
+}
+
+func (l *logFileHook) Close() {
+	if l.file != nil {
+		l.file.Close()
+	}
+}
+
+func (l *logFileHook) Levels() []logrus.Level {
+	return logrus.AllLevels
+}
+
+func (l *logFileHook) Fire(h *logrus.Entry) error {
+	data, err := l.formatter.Format(h)
 	if err != nil {
-		return
+		return err
 	}
 
-	log.SetOutput(writer)
+	_, err = l.file.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewLogFileHook(path string, f logrus.Formatter) (*logFileHook, error) {
+	w, err := os.Create(path)
+	if err != nil {
+		return nil, err
+	}
+	return &logFileHook{file: w, formatter: f}, nil
+}
+
+func UseLogrus() error {
+	var log = logrus.StandardLogger()
+
+	// writer, err := os.Create("tmp.log")
+	// if err != nil {
+	// 	return
+	// }
+	// log.SetOutput(writer)
+	//
 	// log.SetFormatter(&log.JSONFormatter{})
+	//
+	hook, err := NewLogFileHook("tmpHook.log", &logrus.JSONFormatter{})
+	if err != nil {
+		return err
+	}
+
+	log.AddHook(hook)
 	log.SetFormatter(&logrus.TextFormatter{
 		DisableColors: true,
 		FullTimestamp: true,
 	})
-	log.SetLevel(logrus.WarnLevel)
+	// log.SetLevel(logrus.WarnLevel)
 	log.SetReportCaller(true)
 	log.Info("Start logrus.")
 	log.Warn("Test warning.")
@@ -33,4 +82,5 @@ func UseLogrus() {
 		"desc":     "About logrus.",
 	}).Info("Test Info")
 
+	return nil
 }
