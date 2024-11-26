@@ -6,6 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// 日志模块主要用法：设置日志级别、设置日志输出、设置日志钩子函数（打印堆栈，分割日志）
+
 // var log = logrus.New()
 
 // refer: https://github.com/rifflock/lfshook
@@ -48,6 +50,22 @@ func NewLogFileHook(path string, f logrus.Formatter) (*logFileHook, error) {
 	return &logFileHook{file: w, formatter: f}, nil
 }
 
+func printFileNotExist(path string) error {
+	_, err := os.Open(path)
+	if err != nil {
+		logrus.WithError(err).Error()
+		return err
+	}
+	return nil
+}
+
+func OpenFile(path string) {
+	err := printFileNotExist(path)
+	if err != nil {
+		logrus.WithError(err).Error()
+	}
+}
+
 func UseLogrus() error {
 	var log = logrus.StandardLogger()
 
@@ -81,6 +99,8 @@ func UseLogrus() error {
 		"use_time": 50,
 		"desc":     "About logrus.",
 	}).Info("Test Info")
+
+	OpenFile("/root/tmp.log")
 
 	return nil
 }
