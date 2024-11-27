@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func UseZapLogging() {
+func UseZapProductionSuger() {
 	logger, _ := zap.NewProduction()
 
 	defer logger.Sync()
@@ -22,7 +22,7 @@ func UseZapLogging() {
 	)
 }
 
-func UseFasterZapLogging() {
+func UseZapProduction() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
 
@@ -34,7 +34,7 @@ func UseFasterZapLogging() {
 	)
 }
 
-func UseZapExampleLogging() {
+func UseZapExample() {
 	logger := zap.NewExample()
 	defer logger.Sync()
 

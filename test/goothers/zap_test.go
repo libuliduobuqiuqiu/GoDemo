@@ -7,12 +7,7 @@ import (
 
 func TestZapLogging(t *testing.T) {
 	zapdemo.UseZapLogging()
-}
-
-func TestZapFasterLogging(t *testing.T) {
-	zapdemo.UseFasterZapLogging()
-}
-
-func TestZapExampleLogging(t *testing.T) {
-	zapdemo.UseZapExampleLogging()
+	// zapdemo.UseZapExample()
+	// zapdemo.UseZapProduction()
+	// zapdemo.UseZapProductionSuger()
 }
