@@ -32,6 +32,8 @@ func (l *logFileHook) Fire(h *logrus.Entry) error {
 	return nil
 }
 
+// 普通日志文件保存钩子函数
+// 可以直接使用logrus.SetOutput
 func NewLogFileHook(path string, f logrus.Formatter) (*logFileHook, error) {
 	w, err := os.Create(path)
 	if err != nil {

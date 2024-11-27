@@ -27,13 +27,15 @@ func UseLogrus() error {
 	// }
 	// log.SetOutput(writer)
 
-	hook, err := NewLogFileHook("tmpHook.log", &logrus.JSONFormatter{})
+	logHook, err := NewLogFileHook("tmpHook.log", &logrus.JSONFormatter{})
 	if err != nil {
 		return err
 	}
+	rotateLogHook := NewRotateLogFileHook(nil)
 
 	log.AddHook(&stackHook{})
-	log.AddHook(hook)
+	log.AddHook(logHook)
+	log.AddHook(rotateLogHook)
 	log.SetLevel(logrus.ErrorLevel)
 	log.SetReportCaller(true)
 	log.SetFormatter(&logrus.JSONFormatter{})
