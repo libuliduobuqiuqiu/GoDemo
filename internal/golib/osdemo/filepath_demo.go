@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 func PrintFilePath(dirName string) (err error) {
@@ -28,6 +30,7 @@ func PrintFilePath(dirName string) (err error) {
 	})
 
 	if err != nil {
+		logrus.WithError(err).Error()
 		return err
 	}
 	return nil

@@ -21,3 +21,5 @@ ai_conf.json
 *.o
 
 main
+
+test/**/*.log
