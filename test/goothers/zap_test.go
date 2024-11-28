@@ -6,7 +6,10 @@ import (
 )
 
 func TestZapLogging(t *testing.T) {
-	zapdemo.UseZapLogging()
+	err := zapdemo.UseZapLogging()
+	if err != nil {
+		t.Fatal(err)
+	}
 	// zapdemo.UseZapExample()
 	// zapdemo.UseZapProduction()
 	// zapdemo.UseZapProductionSuger()
