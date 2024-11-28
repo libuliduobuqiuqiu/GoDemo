@@ -3,13 +3,8 @@ package logrusdemo
 import (
 	"runtime"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
-
-type stackTracer interface {
-	StackTrace() errors.StackTrace
-}
 
 type stackHook struct{}
 

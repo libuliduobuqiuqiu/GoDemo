@@ -1,9 +1,7 @@
 package main
 
-import (
-	"godemo/internal/godemo"
-)
+import "fmt"
 
 func main() {
-	godemo.StartByd()
+	fmt.Println("go demo by libuliduobuqiuqiu")
 }

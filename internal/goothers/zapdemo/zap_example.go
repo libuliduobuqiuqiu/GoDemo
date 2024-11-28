@@ -8,8 +8,6 @@ import (
 
 // 设置日志输出等级、日志输出文件、堆栈信息打印、日志输出格式、
 // 日志通过钩子保存记录到日志文件
-//
-//
 
 type zapLogData struct {
 	Msg     string `json:"msg"`

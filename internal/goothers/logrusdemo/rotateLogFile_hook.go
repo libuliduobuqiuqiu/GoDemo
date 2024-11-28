@@ -9,7 +9,7 @@ import (
 
 var tmpRotateConfig = &RotateConfig{
 	FileName:   "app.log",
-	MaxSize:    500,
+	MaxSize:    100,
 	MaxBackups: 3,
 	MaxAges:    3,
 }

@@ -13,7 +13,7 @@ func initRotateLogCore(config zapcore.EncoderConfig) zapcore.Core {
 
 	rotateLogger := &lumberjack.Logger{
 		Filename:   "app2.log",
-		MaxSize:    500,
+		MaxSize:    100,
 		MaxBackups: 3,
 		MaxAge:     3,
 		Compress:   true,
@@ -34,6 +34,7 @@ func InitCore() []zapcore.Core {
 	config.EncodeTime = zapcore.ISO8601TimeEncoder
 
 	rotateCore := initRotateLogCore(config)
-	consoleCore := initConsoleCore(config)
-	return []zapcore.Core{rotateCore, consoleCore}
+
+	// consoleCore := initConsoleCore(config)
+	return []zapcore.Core{rotateCore}
 }
