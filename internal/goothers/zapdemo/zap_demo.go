@@ -15,7 +15,7 @@ func NewZapLogger() *zap.Logger {
 	return logger
 }
 
-func UseZapProductionSuger() {
+func UseZapProductionSugar() {
 	logger, _ := zap.NewProduction()
 
 	defer logger.Sync()
@@ -31,7 +31,8 @@ func UseZapProductionSuger() {
 }
 
 func UseZapProduction() {
-	logger, _ := zap.NewProduction()
+	logger, _ := zap.NewProduction(zap.AddStacktrace(zap.InfoLevel))
+
 	defer logger.Sync()
 
 	url := "http://www.google.com"

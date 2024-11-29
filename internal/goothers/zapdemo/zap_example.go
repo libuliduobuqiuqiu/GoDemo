@@ -16,6 +16,9 @@ type zapLogData struct {
 	Backoff int    `json:"backoff"`
 }
 
+// Zap 正常logger输出日志性能更快，suagar logger输出日志支持结构化；
+// Zap 通过自定输出encoder，设置输出等级，输出格式，堆栈信息等；
+// Zap通过core可以自定义多个输出；
 func UseZapLogging() error {
 	cores := InitCore()
 	core := zapcore.NewTee(cores...)

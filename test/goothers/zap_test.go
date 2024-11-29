@@ -11,6 +11,6 @@ func TestZapLogging(t *testing.T) {
 		t.Fatal(err)
 	}
 	// zapdemo.UseZapExample()
-	// zapdemo.UseZapProduction()
+	zapdemo.UseZapProduction()
 	// zapdemo.UseZapProductionSuger()
 }

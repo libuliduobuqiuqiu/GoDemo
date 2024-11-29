@@ -8,6 +8,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// 输出到分割日志logger
 func initRotateLogCore(config zapcore.EncoderConfig) zapcore.Core {
 	fileEncoder := zapcore.NewJSONEncoder(config)
 
@@ -22,6 +23,7 @@ func initRotateLogCore(config zapcore.EncoderConfig) zapcore.Core {
 	return zapcore.NewCore(fileEncoder, zapcore.AddSync(rotateLogger), zapcore.InfoLevel)
 }
 
+// 输出到前端
 func initConsoleCore(config zapcore.EncoderConfig) zapcore.Core {
 	consoleEncoder := zapcore.NewJSONEncoder(config)
 
