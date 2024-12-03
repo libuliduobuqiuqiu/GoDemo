@@ -22,4 +22,6 @@ ai_conf.json
 
 main
 
+# 日志文件
 test/**/*.log
+test/**/*.gz
