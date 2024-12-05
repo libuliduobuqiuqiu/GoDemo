@@ -2,6 +2,7 @@
 ![GitHub Created At](https://img.shields.io/github/created-at/libuliduobuqiuqiu/GoDemo)
 ![GitHub last commit](https://img.shields.io/github/last-commit/libuliduobuqiuqiu/GoDemo)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/libuliduobuqiuqiu/GoDemo)
+![GitHub License](https://img.shields.io/github/license/libuliduobuqiuqiu/GoDemo)
 
 
 ## 项目简介
