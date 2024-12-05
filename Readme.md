@@ -1,32 +1,15 @@
-# 项目简介
+# Go学习资料库
 
-本项目是一个关于 Go 语言圣经、Gin 框架以及 Go 日常使用模块的示例代码库。
-
-代码示例涉及了 Go 语言基础、并发编程、网络编程、数据库操作、测试等多个方面。
-
-本项目旨在帮助 Go 语言初学者快速上手并深入了解 Go 语言的使用。
-
+> 该项目旨在帮助我学习Go语言，包含了Go的基础示例、技术文档、各种库的demo、常见算法实现以及对应的测试用例。通过这个项目，我希望深入理解Go的各个方面，并为自己在日常开发中提供参考资料。
 
 ## 目录结构
 
-```cpp
-.
-|-- AssertionDemo
-|-- Demo
-|-- GinDemo
-|-- Readme.md
-|-- SqlxDemo
-|-- ch5
-|-- ch6
-|-- ch7
-|-- ch8
-|-- conf.json
-|-- go.mod
-|-- go.sum
-|-- main
-|-- main.exe
-|-- public
-`-- templates
-```
+- cmd: 执行程序的入口以及自动生成代码的入口
+- configs: 配置文件(mysql,服务器)
+- docs: 存放相关Go语言技术文档,涵盖基础到进阶
+- internal：存放各种库的demo、算法、实际业务场景等
+- pkg: 工具函数包
+- test: 存放各种测试用例
+- web: 存放各种web框架实际使用代码
 
 [![Security Status](https://www.murphysec.com/platform3/v31/badge/1672544835743072256.svg)](https://www.murphysec.com/console/report/1672543209410084864/1672544835743072256)
