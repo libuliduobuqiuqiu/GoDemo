@@ -1,4 +1,9 @@
 # GoDemo
+![GitHub Created At](https://img.shields.io/github/created-at/libuliduobuqiuqiu/GoDemo)
+![GitHub last commit](https://img.shields.io/github/last-commit/libuliduobuqiuqiu/GoDemo)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/libuliduobuqiuqiu/GoDemo)
+
+
 ## 项目简介
 GoDemo是一个探索和学习Go语言的代码仓库，它包含：
 - Go语言的基础示例：从基础语法到高级特性。
