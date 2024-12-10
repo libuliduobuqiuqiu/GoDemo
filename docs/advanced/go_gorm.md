@@ -20,3 +20,38 @@
 6. 日志和调试
     - SQL查询日志
     - 支持性能分析
+
+
+## 数据库连接
+
+mysql两种方式建立连接：
+1. 通过dsn（data source name)新建一个mysql连接,然后初始化*gorm.DB;
+2. 通过已存在的mysql连接，初始化*gorm.DB;
+
+
+## ORM核心功能
+
+### 基础CRUD操作
+
+基础的增删改查操作？
+
+### 模型定义
+
+如何模型定义，字段标签的作用？
+1. 模型用普通结构体定义，
+    - 使用一个默认ID为主键
+    - 表名默认将结构体名转换为snake_case结构体并且加上复数
+    - 列名默认将字段名转换为snake_case结构体
+    - Gorm使用字段CreateAt和UpdateAt用来自动跟踪记录中的创建和更新时间
+2. 常用字段标签：
+    - column
+    - type
+    - primary key
+    - unique key
+    - default
+    - comment
+
+### 事务支持
+
+怎么进行事务操作？怎么在事务中执行多个操作？事务底层原理？
+

@@ -41,3 +41,8 @@ func ListUsersByNotTableName() error {
 	fmt.Println(len(users))
 	return nil
 }
+
+func InsertUserByTrans() error {
+	return nil
+
+}
