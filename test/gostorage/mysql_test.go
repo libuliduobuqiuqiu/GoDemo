@@ -1,4 +1,4 @@
-package storage
+package gostorage
 
 import (
 	"fmt"

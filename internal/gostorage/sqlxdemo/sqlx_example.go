@@ -1,84 +1,51 @@
-package main
+package sqlxdemo
 
 import (
-	"database/sql/driver"
 	"errors"
 	"fmt"
+	"godemo/pkg"
+	"log"
+
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/configor"
 	"github.com/jmoiron/sqlx"
-	"os"
+	"godemo/internal/gostorage/sqlxdemo/model"
 )
 
-var db *sqlx.DB
+var tmpDB *sqlx.DB
 
-type Config struct {
-	Mysql DBConfig `json:"mysql"`
-}
-
-type DBConfig struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Host     string `json:"host"`
-	Prefix   string `json:"prefix"`
-}
-
-type Music struct {
-	ID        int    `db:"id"`
-	Author    string `db:"music_author"`
-	Name      string `db:"music_name"`
-	Album     string `db:"music_album"`
-	Time      string `db:"music_time"`
-	MusicType string `db:"music_type"`
-	Lyrics    string `db:"music_lyrics"`
-	Arranger  string `db:"music_arranger"`
-}
-
-// InitDB 初始化DB连接
-func InitDB() error {
-	// 读取conf.json配置文件
-	confDir := "conf.json"
-	_, err := os.Stat(confDir)
+func init() {
+	db, err := InitDB()
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	// 解析conf.json配置文件
-	var conf Config
-	err = configor.Load(&conf, confDir)
-	if err != nil {
-		return err
-	}
+	tmpDB = db
+}
 
-	// 新建DB连接
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host,
-		conf.Mysql.Prefix)
-	db, err = sqlx.Connect("mysql", dataSourceName)
-	if err != nil {
-		return err
-	}
-	return nil
+func InitDB() (db *sqlx.DB, err error) {
+	dsn := pkg.GenMysqlDSN("")
+	db, err = sqlx.Connect(pkg.MysqlType, dsn)
+	return
 }
 
 // QueryRowDemo 单行查询
 func QueryRowDemo() {
-	var music Music
+	var music model.Music
 
 	sqlStr := "select id, music_author, music_name from music_music"
-	err := db.Get(&music, sqlStr)
+	err := tmpDB.Get(&music, sqlStr)
 	if err != nil {
 		fmt.Printf("get failed, err:%v\n", err)
 		return
 	}
 	fmt.Println(music)
-
 }
 
 // QueryMultiRowDemo 多行查询
 func QueryMultiRowDemo() {
-	var music []Music
+	var music []model.Music
 	sqlStr := "select * from music_music"
-	err := db.Select(&music, sqlStr)
+	err := tmpDB.Select(&music, sqlStr)
 	if err != nil {
 		fmt.Printf("get failed, err:%v\n", err)
 		return
@@ -93,7 +60,7 @@ func QueryMultiRowDemo() {
 func InsertRowDemo() {
 	sqlStr := "insert into music_music(music_author, music_name, music_album, music_time, music_type, " +
 		"music_lyrics, music_arranger) values (?, ?, ?, ?, ?, ?, ?)"
-	ret, err := db.Exec(sqlStr, "zhangsan", "黄种人", "天地", "2022-11-27", "love", "方文山", "taylor")
+	ret, err := tmpDB.Exec(sqlStr, "zhangsan", "黄种人", "天地", "2022-11-27", "love", "方文山", "taylor")
 
 	if err != nil {
 		fmt.Printf("Inesert into music_music failed: %v", err)
@@ -111,7 +78,7 @@ func InsertRowDemo() {
 // UpdateRowDemo 更新数据
 func UpdateRowDemo() {
 	sqlStr := "update music_music set music_type = ? where music_author = ?"
-	ret, err := db.Exec(sqlStr, "God", "周杰伦")
+	ret, err := tmpDB.Exec(sqlStr, "God", "周杰伦")
 	if err != nil {
 		fmt.Printf("Update Row failed: %v", err)
 		return
@@ -128,7 +95,7 @@ func UpdateRowDemo() {
 // DeleteRowDemo 删除指定数据
 func DeleteRowDemo() {
 	sqlStr := "delete from music_music where music_name = ?"
-	ret, err := db.Exec(sqlStr, "zhangsan")
+	ret, err := tmpDB.Exec(sqlStr, "zhangsan")
 
 	if err != nil {
 		fmt.Printf("Delete Row failed: %v", err)
@@ -159,7 +126,7 @@ func InsertRowDemo2() {
 		"music_lyrics":   "xiaobang",
 		"music_arranger": "wangzherognyao",
 	}
-	_, err := db.NamedExec(sqlStr, music_info)
+	_, err := tmpDB.NamedExec(sqlStr, music_info)
 	if err != nil {
 		fmt.Println("Insert into music failed(NamedExec): ", err)
 		return
@@ -170,8 +137,8 @@ func InsertRowDemo2() {
 func NameQuery() {
 	sqlStr := "select * from music_music where music_author=:music_author"
 
-	condition := Music{Author: "周杰伦"}
-	rows, err := db.NamedQuery(sqlStr, condition)
+	condition := model.Music{Author: "周杰伦"}
+	rows, err := tmpDB.NamedQuery(sqlStr, condition)
 	if err != nil {
 		fmt.Printf("NamedQuery failed: %v", err)
 		return
@@ -180,7 +147,7 @@ func NameQuery() {
 	defer rows.Close()
 
 	for rows.Next() {
-		var music Music
+		var music model.Music
 		err := rows.StructScan(&music)
 		if err != nil {
 			fmt.Println(err)
@@ -192,7 +159,7 @@ func NameQuery() {
 
 // TransactionCommitDemo 事务操作
 func TransactionCommitDemo() (err error) {
-	tx, err := db.Beginx()
+	tx, err := tmpDB.Beginx()
 	if err != nil {
 		fmt.Printf("begin trans failed, err: %v \n", err)
 		return err
@@ -228,10 +195,6 @@ func TransactionCommitDemo() (err error) {
 	return nil
 }
 
-func (m Music) Value() (driver.Value, error) {
-	return []interface{}{m.Author, m.Name, m.Album, m.Time, m.MusicType, m.Lyrics, m.Arranger}, nil
-}
-
 // BatchInsertMusic Sqlx.In批量插入
 func BatchInsertMusic(musicList []interface{}) error {
 	fmt.Println(musicList...)
@@ -243,29 +206,29 @@ func BatchInsertMusic(musicList []interface{}) error {
 	fmt.Println(InsertSql)
 	fmt.Println(args)
 
-	_, err := db.Exec(InsertSql, args...)
+	_, err := tmpDB.Exec(InsertSql, args...)
 	return err
 }
 
 // BatchInsertMusicByNamed 通过NamedExec绑定字段查询
-func BatchInsertMusicByNamed(musicList []*Music) error {
+func BatchInsertMusicByNamed(musicList []*model.Music) error {
 	sqlStr := "INSERT INTO music_music (music_author, music_name, music_album, music_time, music_type, music_lyrics, music_arranger) VALUES " +
 		"(:music_author, :music_name, :music_album, :music_time, :music_type, :music_lyrics, :music_arranger)"
 
-	_, err := db.NamedExec(sqlStr, musicList)
+	_, err := tmpDB.NamedExec(sqlStr, musicList)
 	return err
 }
 
 // QueryByNames 通过Name查询Music
-func QueryByNames(musicNames []string) (musicList []Music, err error) {
+func QueryByNames(musicNames []string) (musicList []model.Music, err error) {
 	sqlStr := "select * from music_music where music_name in (?)"
 
 	query, args, _ := sqlx.In(sqlStr, musicNames)
 	fmt.Println(query)
 
-	query = db.Rebind(query)
+	query = tmpDB.Rebind(query)
 	fmt.Println(query)
 
-	err = db.Select(&musicList, query, args...)
+	err = tmpDB.Select(&musicList, query, args...)
 	return
 }

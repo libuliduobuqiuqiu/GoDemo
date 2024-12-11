@@ -7,7 +7,10 @@ import (
 	"os"
 )
 
-const ConfigPath = "/data/GoDemo/configs/conf.json"
+const (
+	MysqlType  = "mysql"
+	ConfigPath = "/data/MyRepo/go-demo/configs/conf.json"
+)
 
 type GlobalConfig struct {
 	SSHConfig      BaseConfig  `json:"ssh"`

@@ -18,7 +18,7 @@ type User struct {
 	Century     string  `gorm:"century" faker:"century"`
 	Date        string  `gorm:"date" faker:"date"`
 	CompanyID   string  `gorm:"column:company_code" faker:"-"`
-	Company     Company `gorm:"foreignKey:CompanyID;references:Code" faker:"-"`
+	Company     Company `gorm:"foreignKey:CompanyID;references:ID" faker:"-"`
 }
 
 func (u *User) TableName() string {
@@ -27,5 +27,14 @@ func (u *User) TableName() string {
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	u.ID = uuid.New()
+	// 测试创建是否事务
+	// fmt.Println(u.ID)
+	// return fmt.Errorf("test rollback hook")
+	return nil
+}
+
+func (u *User) AfterCreate(tx *gorm.DB) (err error) {
+	// 测试创建后回调钩子失败后是否回滚
+	// return fmt.Errorf("test after create rollback hook.")
 	return nil
 }

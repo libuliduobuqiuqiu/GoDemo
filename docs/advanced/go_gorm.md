@@ -54,4 +54,68 @@ mysql两种方式建立连接：
 ### 事务支持
 
 怎么进行事务操作？怎么在事务中执行多个操作？事务底层原理？
+调用事务函数，自定义函数中执行的业务逻辑,函数中可以执行多个操作，当某个操作异常或者业务逻辑返回错误，回滚之前操作。
+```go
+err = db.Transaction(func(tx *gorm.DB) (err error) {
+}
+```
+还可以通过手动执行事务
+```go
+tx := db.Begin()
+// db操作
+tx.Create()
+// 错误回滚
+tx.Rollback()
+// 提交操作
+tx.Commit()
+```
 
+## 查询生成
+
+### 链式调用
+
+链式调用什么用，链式调用怎么用？
+简单来说链式调用，更加简洁优雅，同时能让逻辑代码保持连贯性；
+```go
+  if err := db.Select("id", "email", "username").Limit(10).Find(&userList).Error; err != nil {
+		return err
+	}
+
+	if err := db.Where("email like ?", "%com").Take(&user).Error; err != nil {
+		return err
+	}
+```
+链式调用主要分为三部分：Chain Methods,Finsher Methods, New Session Methods.
+
+### SQL构建器
+
+如何执行原生SQL？DryRun模式有什么用？
+```go
+// 原生SQL查询
+db.Raw().Scan()
+// 原生SQL执行
+db.Exec()
+```
+DryRun模式可以在不执行的情况下，生成SQL;
+```go
+stmt := db.Session(&gorm.Session{DryRun: true}).Where("email like ?", "%.com").Find(&userList).Statement
+fmt.Println(stmt.SQL.String())
+fmt.Println(stmt.Vars)
+```
+
+### 模型验证与钩子
+
+### 钩子
+钩子是在什么？在什么时候执行？如果钩子出现异常之后，会导致什么结果？
+钩子就是回调函数，可以在创建、更新、删除操作前后调用；
+```go
+func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	u.ID = uuid.New()
+	return nil
+}
+```
+Gorm中操作默认是开启事务，当钩子出现异常时会对操作进行回滚。
+
+## 高级功能
+
+### 预加载

@@ -1,7 +1,8 @@
-package gormdemo
+package dao
 
 import (
 	"fmt"
+	"godemo/internal/gostorage/gormdemo"
 	"godemo/internal/gostorage/gormdemo/model"
 	"log"
 
@@ -9,23 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func printRecord(u *model.User, result *gorm.DB) {
-	fmt.Printf("%v\n", u)
-	fmt.Println(result.Error, result.RowsAffected)
-}
-
-func printRecords(u []*model.User, result *gorm.DB) {
-
-	for _, u := range u {
-		fmt.Println(u)
-	}
-	fmt.Println(result.Error, result.RowsAffected)
-
-}
-
 // insertOneRow 单挑记录插入
-func insertOneRow(db *gorm.DB) {
+func insertOneRow() {
 	var tmpUser *model.User
+	db := gormdemo.GetDB()
 
 	// 生成随机数据
 	err := faker.FakeData(&tmpUser)
@@ -44,7 +32,9 @@ func insertOneRow(db *gorm.DB) {
 }
 
 // InsertRows 批量插入
-func InsertRows(db *gorm.DB) {
+func InsertRows() {
+	db := gormdemo.GetDB()
+
 	var users []*model.User
 	for i := 0; i < 1000; i++ {
 		tmpUser := &model.User{}
@@ -69,71 +59,73 @@ func InsertRows(db *gorm.DB) {
 }
 
 // simpleQueryRow 简单查询
-func simpleQueryRow(db *gorm.DB) {
+func simpleQueryRow() {
+	db := gormdemo.GetDB()
 
 	// 查询第一条记录（主键升序）
 	var firstUser *model.User
 	result := db.First(&firstUser)
-	printRecord(firstUser, result)
+	gormdemo.PrintRecord(firstUser, result)
 
 	// 仅当有一个ID主键时，可直接定义User时把ID初始化
 	firstIDUser2 := &model.User{ID: "e8efff22-a497-4a88-be1e-5123eb23ff75"}
 	result = db.First(&firstIDUser2)
-	printRecord(firstIDUser2, result)
+	gormdemo.PrintRecord(firstIDUser2, result)
 
 	// 查询表中第一条记录（没有指定排序字段）
 	var firstUser2 *model.User
 	result = db.Take(&firstUser2)
-	printRecord(firstUser2, result)
+	gormdemo.PrintRecord(firstUser2, result)
 
 	// 查询表中最后一条记录（主键排序）
 	var lastUser *model.User
 	result = db.Last(&lastUser)
-	printRecord(lastUser, result)
+	gormdemo.PrintRecord(lastUser, result)
 
 	// 查询当前所有记录
 	var users []*model.User
 	result = db.Find(&users)
-	printRecords(users, result)
+	gormdemo.PrintRecords(users, result)
 
 }
 
 // condQueryRow 条件查询
-func condQueryRow(db *gorm.DB) {
+func condQueryRow() {
+	db := gormdemo.GetDB()
 
 	// 查询当前username为condQueryRow的第一条记录（Struct方式）
 	var tmpUser1 *model.User
 	result := db.Where(&model.User{UserName: "qNptxqb"}).First(&tmpUser1)
-	printRecord(tmpUser1, result)
+	gormdemo.PrintRecord(tmpUser1, result)
 
 	// 查询当前username为condQueryRow的第一条记录（Map方式）
 	var tmpUser2 *model.User
 	result = db.Where(map[string]interface{}{"username": "qNptxqb"}).First(&tmpUser2)
-	printRecord(tmpUser2, result)
+	gormdemo.PrintRecord(tmpUser2, result)
 
 	// 指定Century查询字段查询记录
 	var tmpUser3 []*model.User
 	result = db.Where(&model.User{Century: "VII", UserName: "jaQlaFs"}, "Century").Find(&tmpUser3)
-	printRecords(tmpUser3, result)
+	gormdemo.PrintRecords(tmpUser3, result)
 
 	// String 条件，直接写表达式
 	var tmpUser4 *model.User
 	result = db.Where("username = ?", "qNptxqb").First(&tmpUser4)
-	printRecord(tmpUser4, result)
+	gormdemo.PrintRecord(tmpUser4, result)
 
 	var users []*model.User
 	result = db.Where("date > ?", "2010-10-1").Find(&users)
-	printRecords(users, result)
+	gormdemo.PrintRecords(users, result)
 
 	// Order排序（默认升序）
 	var users2 []*model.User
 	result = db.Where("date > ?", "2010-10-1").Order("date").Find(&users2)
-	printRecords(users2, result)
+	gormdemo.PrintRecords(users2, result)
 
 	// 查询特定的字段，不返回所有字段
 	var tmpUser5 *model.User
 	result = db.Select("username", "date").Where("username = ?", "qNptxqb").First(&tmpUser5)
-	printRecord(tmpUser5, result)
+	gormdemo.PrintRecord(tmpUser5, result)
 }
 
 type APIUser struct {
@@ -144,7 +136,8 @@ type APIUser struct {
 }
 
 // advancedQueryRow 高级查询
-func advancedQueryRow(db *gorm.DB) {
+func advancedQueryRow() {
+	db := gormdemo.GetDB()
 
 	// 智能选择字段，如果经常只需要查询某些字段，可以重新定义小结构体
 	var apiUser []APIUser
@@ -176,7 +169,9 @@ func advancedQueryRow(db *gorm.DB) {
 }
 
 // updateRow 更新操作
-func updateRow(db *gorm.DB) {
+func updateRow() {
+	db := gormdemo.GetDB()
+
 	// Save会保存所有字段，即使字段是零值，如果保存的值没有主键，就会创建，否则则是更新指定记录
 	result := db.Save(&model.User{ID: "e8efff22-a497-4a88-be1e-5123eb23ff75", UserName: "zhangsan", Date: "2023-12-12"})
 	fmt.Println(result.Error, result.RowsAffected)
@@ -194,7 +189,8 @@ func updateRow(db *gorm.DB) {
 	fmt.Println(result.Error, result.RowsAffected)
 }
 
-func deleteRows(db *gorm.DB) {
+func deleteRows() {
+	db := gormdemo.GetDB()
 
 	// 指定匹配字段删除数据
 	result := db.Delete(&model.User{}, map[string]interface{}{"username": "NJrauTj"})
@@ -216,7 +212,8 @@ func deleteRows(db *gorm.DB) {
 }
 
 // execSQL 执行原生SQL语句
-func execSQL(db *gorm.DB) {
+func execSQL() {
+	db := gormdemo.GetDB()
 
 	// 将查询SQL的结果映射到指定的单个变量中
 	var oneUser model.User
