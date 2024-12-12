@@ -9,6 +9,20 @@ import (
 	"testing"
 )
 
+func TestUseJoin(t *testing.T) {
+	err := dao.UseGormJoin()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPreload(t *testing.T) {
+	err := dao.UseGormPreload()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestUpdateUserCompany(t *testing.T) {
 	err := dao.UpdateUserCompany()
 	if err != nil {

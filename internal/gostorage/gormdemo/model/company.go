@@ -6,9 +6,10 @@ import (
 )
 
 type Company struct {
-	ID   string `gorm:"column:id" faker:"-"`
-	Code string `gorm:"column:code" faker:"word"`
-	Name string `gorm:"column:name" faker:"word"`
+	ID    string `gorm:"column:id" faker:"-"`
+	Code  string `gorm:"column:code" faker:"word"`
+	Name  string `gorm:"column:name" faker:"word"`
+	Users []User `gorm:"foreignKey: CompanyID"`
 }
 
 func (c *Company) TableName() string {

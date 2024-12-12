@@ -7,8 +7,10 @@ import (
 	"math/rand"
 	"time"
 
+	"gopkg.in/natefinch/lumberjack.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var gormDB *gorm.DB
@@ -55,11 +57,36 @@ func GetDB() *gorm.DB {
 
 func InitDB() (db *gorm.DB, err error) {
 	dsn := pkg.GenMysqlDSN("")
-	db, err = gorm.Open(mysql.Open(dsn))
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	db = db.Debug()
 	return
 }
 
+func InitDBWithNewLogger() (db *gorm.DB, err error) {
+	rotateLogger := &lumberjack.Logger{
+		Filename:   "gorm.log",
+		MaxSize:    100,
+		MaxBackups: 3,
+		MaxAge:     3,
+		Compress:   true,
+	}
+
+	newLogger := logger.New(log.New(rotateLogger, "\r\n", log.LstdFlags),
+		logger.Config{
+			SlowThreshold:             time.Second,   // Slow SQL threshold
+			LogLevel:                  logger.Silent, // Log level
+			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
+			ParameterizedQueries:      true,          // Don't include params in the SQL log
+			Colorful:                  false,         // Disable color
+		})
+
+	dsn := pkg.GenMysqlDSN("")
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
+	db = db.Debug()
+	return
+}
+
+// InitDBByExistDB
 func InitDBByExistDB(existDB gorm.ConnPool) (db *gorm.DB, err error) {
 	db, err = gorm.Open(mysql.New(mysql.Config{
 		Conn: existDB,

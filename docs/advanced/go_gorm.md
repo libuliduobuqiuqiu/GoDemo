@@ -1,5 +1,7 @@
 # Gorm
 
+> 整理提问、日常使用逐步形成笔记。
+
 如何设计一个数据库引擎？需要具备哪些功能？
 1. 数据库连接（支持不同类型数据进行创建、关闭、管理连接功能，支持连接池管理）
 2. ORM核心功能：
@@ -119,3 +121,39 @@ Gorm中操作默认是开启事务，当钩子出现异常时会对操作进行�
 ## 高级功能
 
 ### 预加载
+
+预加载作用？Preload 和Join有什么区别？
+预加载就是可以在查询数据时，自动加载关联关系数据的方法。Preload是通过单独的查询加载关联数据，Join则是通过左连接查询关联数据；
+```go
+// Preload 预加载
+if err := db.Preload("Users").Limit(10).Find(&companys).Error; err != nil {
+		return err
+	}
+// 实际：
+// SELECT * FROM `company` LIMIT 3
+// SELECT * FROM `users` WHERE `users`.`company_code` IN ()
+
+// Join 预加载
+if err := db.Joins("Company").Limit(10).Find(&users).Error; err != nil {
+		return err
+	}
+// 实际:
+// SELECT `users`.`id`,`users`.`email`,`users`.`password`,`users`.`phone_number`,`users`.`username`,`users`.`first_name`,`users`.`last_name`,`users`.`century`,`users`.`date`,`users`.`company_code`,`Company`.`id` AS `Company__id`,`Company`.`code` AS `Company__code`,`Company`.`name` AS `Company__name` FROM `users` LEFT JOIN `company` `Company` ON `users`.`company_code` = `Company`.`id` LIMIT 10
+```
+> 条件预加载？自定义预加载？嵌套预加载？(实际使用场景)
+
+## 日志和调试
+怎么设置慢查询打印时间，怎么自定义日志输出，怎么自定义Logger?
+
+```go
+newLogger := logger.New(log.New(rotateLogger, "\r\n", log.LstdFlags),
+		logger.Config{
+			SlowThreshold:             time.Second,   // Slow SQL threshold
+			LogLevel:                  logger.Silent, // Log level
+			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
+			ParameterizedQueries:      true,          // Don't include params in the SQL log
+			Colorful:                  false,         // Disable color
+		})
+db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
+```
+可以考虑zap作为logger，gorm打印通过zap logger进行打印,具体需要自定义实现gorm logger接口，git上有类似开源组件。

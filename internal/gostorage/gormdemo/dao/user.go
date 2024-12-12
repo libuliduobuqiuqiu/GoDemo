@@ -156,3 +156,34 @@ func UpdateUserCompany() error {
 
 	return nil
 }
+
+func UseGormPreload() error {
+	var (
+		companys []*model.Company
+	)
+	db := gormdemo.GetDB()
+	if err := db.Preload("Users").Limit(3).Find(&companys).Error; err != nil {
+		return err
+	}
+
+	for _, c := range companys {
+		fmt.Println(c)
+	}
+	return nil
+}
+
+func UseGormJoin() error {
+	var (
+		users []*model.User
+	)
+
+	db := gormdemo.GetDB()
+	if err := db.Joins("Company").Limit(10).Find(&users).Error; err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		fmt.Println(user)
+	}
+	return nil
+}
