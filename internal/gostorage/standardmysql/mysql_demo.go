@@ -47,5 +47,25 @@ func ExecSQLStr() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
+func UpdateUser() error {
+	dsn := pkg.GenMysqlDSN("")
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return err
+	}
+
+	sql := "update users set last_name = 'Gleasons' where id = 'fff2a321-cfb7-48ae-bad1-935f99d9fe75'"
+	result, err := db.Exec(sql)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(rowsAffected)
+	return nil
 }

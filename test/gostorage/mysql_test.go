@@ -34,3 +34,9 @@ func insertSqlByReflect() {
 func TestSqlGenerate(t *testing.T) {
 	insertSqlByReflect()
 }
+
+func TestUpdateUser(t *testing.T) {
+	if err := standardmysql.UpdateUser(); err != nil {
+		t.Fatal(err)
+	}
+}
