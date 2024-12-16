@@ -15,13 +15,13 @@ type Person struct {
 	Age  int    `json:"age"`
 }
 
-type PersonList struct {
+type PersonResp struct {
 	Items []Person `json:"items,omitempty"`
 	Code  int      `json:"code"`
 	Msg   string   `json:"msg"`
 }
 
-var Persons PersonList
+var Persons PersonResp
 
 func (r *routerManger) HandelePerson(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "POST" {
@@ -31,7 +31,7 @@ func (r *routerManger) HandelePerson(w http.ResponseWriter, req *http.Request) {
 	} else {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		errorContent := PersonList{Code: int(http.StatusNoContent), Msg: "Cannot support this method. "}
+		errorContent := PersonResp{Code: int(http.StatusNoContent), Msg: "Cannot support this method. "}
 		if data, err := json.Marshal(errorContent); err == nil {
 			fmt.Println(string(data))
 			w.Write(data)
@@ -39,6 +39,7 @@ func (r *routerManger) HandelePerson(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// GetPersonInfo 获取创建的用户
 func (r *routerManger) GetPersonInfo(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -48,6 +49,7 @@ func (r *routerManger) GetPersonInfo(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// PostPersonInfo 创建用户
 func (r *routerManger) PostPersonInfo(w http.ResponseWriter, req *http.Request) {
 	var person Person
 	data, _ := io.ReadAll(req.Body)
@@ -55,7 +57,7 @@ func (r *routerManger) PostPersonInfo(w http.ResponseWriter, req *http.Request) 
 
 	if data == nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		errorContent := PersonList{Code: int(http.StatusInternalServerError), Msg: "Body is not empty."}
+		errorContent := PersonResp{Code: int(http.StatusInternalServerError), Msg: "Body is not empty."}
 		if errData, err := json.Marshal(errorContent); err == nil {
 			fmt.Println(string(errData))
 			w.Write(errData)
@@ -64,11 +66,16 @@ func (r *routerManger) PostPersonInfo(w http.ResponseWriter, req *http.Request) 
 	}
 
 	if err := json.Unmarshal(data, &person); err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusBadRequest)
+		errorContent := PersonResp{Code: int(http.StatusBadRequest), Msg: "illegal json body."}
+		if errData, err := json.Marshal(errorContent); err == nil {
+			w.Write(errData)
+		}
+		return
 	}
 
 	Persons.Items = append(Persons.Items, person)
-	successContent := PersonList{Code: int(http.StatusOK), Msg: "success."}
+	successContent := PersonResp{Code: int(http.StatusOK), Msg: "success."}
 	if successData, err := json.Marshal(successContent); err == nil {
 		w.WriteHeader(http.StatusOK)
 		fmt.Println(string(successData))
