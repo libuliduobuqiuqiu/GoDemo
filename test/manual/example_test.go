@@ -3,6 +3,7 @@ package manual
 import (
 	"fmt"
 	"godemo/internal/gomanual/genericsdemo"
+	"os"
 	"testing"
 )
 
@@ -66,8 +67,9 @@ func TestEqual(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	fmt.Println("testing start...")
-	m.Run()
+	code := m.Run()
 	fmt.Println("testing end...")
+	os.Exit(code)
 }
 
 func BenchmarkEqual(t *testing.B) {

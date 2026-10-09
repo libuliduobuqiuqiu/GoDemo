@@ -24,7 +24,7 @@ GoDemo是一个探索和学习Go语言的代码仓库，它包含：
 
 ## 环境要求
 运行此项目需要：
-- Go (Version >= 1.20)
+- Go 1.25（以当前 `go.mod` 为准）
 - 对Go语言有基础了解
 
 ## 快速开始
@@ -34,15 +34,21 @@ git clone https://github.com/libuliduobuqiuqiu/GoDemo.git
 cd GoDemo
 ```
 ### 运行示例
-进入相关目录并运行：
+查看命令行入口：
 ```bash
-go run main.go
+go run . --help
 ```
 ### 执行测试
-进入到test文件夹，选择指定的要测试的模块：
+在项目根目录执行默认测试，无需数据库、设备或私有配置：
 ```bash
-go test .
+go build ./...
+go test ./...
 ```
+
+需要外部服务、固定文件或交互的演示使用 `integration` 构建标签，详见[测试与演示说明](docs/testing.md)。
+
+项目整理过程与验证结果见[整理记录](docs/maintenance-log.md)。
+
 ## 贡献指南
 
 欢迎贡献代码！您可以通过提交 Issue 或 Pull Request 为项目做出贡献。

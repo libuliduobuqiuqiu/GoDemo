@@ -16,6 +16,7 @@ const (
 )
 
 func StartCozeChat() {
+	InitAuthorization()
 	client := GenCozeClient()
 
 	ctx := context.Background()

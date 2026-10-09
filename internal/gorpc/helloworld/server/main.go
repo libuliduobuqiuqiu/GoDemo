@@ -15,7 +15,7 @@ type GrpcServer struct {
 }
 
 func (g *GrpcServer) Hello(c context.Context, req *gen.HelloReq) (*gen.HelloResp, error) {
-	log.Printf("Received rpc requests: ", req.String())
+	log.Printf("Received rpc requests: %s", req.String())
 	return &gen.HelloResp{Msg: fmt.Sprintf("hello, world %s", req.Name)}, nil
 }
 

@@ -14,7 +14,7 @@ func TestFilePathAbs(t *testing.T) {
 }
 
 func TestScanDir(t *testing.T) {
-	dirPath := "/data/MyRepo/go-demo/test/godemo"
+	dirPath := "."
 
 	files, err := godemo.ScanDir(dirPath)
 	if err != nil {

@@ -39,7 +39,7 @@ func (c *CozeClient) ConvertCozeRespToContent(body []byte) (completed bool) {
 
 			switch flowData.Type {
 			case "answer":
-				fmt.Printf(flowData.Content)
+				fmt.Print(flowData.Content)
 			case "verbose":
 				c.ConversationID = flowData.ConversationID
 				c.ChatID = flowData.ChatID

@@ -12,10 +12,6 @@ var (
 	BotID         string
 )
 
-func init() {
-	InitAuthorization()
-}
-
 func GenCozeClient() *http.Client {
 	transport := http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

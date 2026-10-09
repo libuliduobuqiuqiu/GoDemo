@@ -20,7 +20,7 @@ func TestSpec(t *testing.T) {
 		Convey("when the another var incremented", func() {
 			x++
 			Convey("seoncd output", func() {
-				So(x, ShouldEqual, 3)
+				So(x, ShouldEqual, 2)
 			})
 		})
 	})

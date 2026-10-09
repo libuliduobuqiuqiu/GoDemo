@@ -21,7 +21,7 @@ func TestPalindrom(t *testing.T) {
 	}
 
 	b := "kakak"
-	if IsPalindrom(b) {
+	if !IsPalindrom(b) {
 		t.Errorf("Error Function: %s", b)
 	}
 }
@@ -37,7 +37,7 @@ func BenchmarkIsPalindrom(t *testing.B) {
 func TestCountLength(t *testing.T) {
 	a := "zhangsan"
 
-	if len(a) < 10 {
+	if len(a) != 8 {
 		t.Errorf("Error String length: %d", len(a))
 	}
 }

@@ -5,21 +5,27 @@ import (
 	"fmt"
 	"godemo/pkg"
 	"log"
+	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"godemo/internal/gostorage/sqlxdemo/model"
 )
 
-var tmpDB *sqlx.DB
+var (
+	tmpDB  *sqlx.DB
+	dbOnce sync.Once
+)
 
-func init() {
-	db, err := InitDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tmpDB = db
+func getDB() *sqlx.DB {
+	dbOnce.Do(func() {
+		var err error
+		tmpDB, err = InitDB()
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+	return tmpDB
 }
 
 func InitDB() (db *sqlx.DB, err error) {
@@ -33,7 +39,7 @@ func QueryRowDemo() {
 	var music model.Music
 
 	sqlStr := "select id, music_author, music_name from music_music"
-	err := tmpDB.Get(&music, sqlStr)
+	err := getDB().Get(&music, sqlStr)
 	if err != nil {
 		fmt.Printf("get failed, err:%v\n", err)
 		return
@@ -45,7 +51,7 @@ func QueryRowDemo() {
 func QueryMultiRowDemo() {
 	var music []model.Music
 	sqlStr := "select * from music_music"
-	err := tmpDB.Select(&music, sqlStr)
+	err := getDB().Select(&music, sqlStr)
 	if err != nil {
 		fmt.Printf("get failed, err:%v\n", err)
 		return
@@ -60,7 +66,7 @@ func QueryMultiRowDemo() {
 func InsertRowDemo() {
 	sqlStr := "insert into music_music(music_author, music_name, music_album, music_time, music_type, " +
 		"music_lyrics, music_arranger) values (?, ?, ?, ?, ?, ?, ?)"
-	ret, err := tmpDB.Exec(sqlStr, "zhangsan", "黄种人", "天地", "2022-11-27", "love", "方文山", "taylor")
+	ret, err := getDB().Exec(sqlStr, "zhangsan", "黄种人", "天地", "2022-11-27", "love", "方文山", "taylor")
 
 	if err != nil {
 		fmt.Printf("Inesert into music_music failed: %v", err)
@@ -78,7 +84,7 @@ func InsertRowDemo() {
 // UpdateRowDemo 更新数据
 func UpdateRowDemo() {
 	sqlStr := "update music_music set music_type = ? where music_author = ?"
-	ret, err := tmpDB.Exec(sqlStr, "God", "周杰伦")
+	ret, err := getDB().Exec(sqlStr, "God", "周杰伦")
 	if err != nil {
 		fmt.Printf("Update Row failed: %v", err)
 		return
@@ -95,7 +101,7 @@ func UpdateRowDemo() {
 // DeleteRowDemo 删除指定数据
 func DeleteRowDemo() {
 	sqlStr := "delete from music_music where music_name = ?"
-	ret, err := tmpDB.Exec(sqlStr, "zhangsan")
+	ret, err := getDB().Exec(sqlStr, "zhangsan")
 
 	if err != nil {
 		fmt.Printf("Delete Row failed: %v", err)
@@ -126,7 +132,7 @@ func InsertRowDemo2() {
 		"music_lyrics":   "xiaobang",
 		"music_arranger": "wangzherognyao",
 	}
-	_, err := tmpDB.NamedExec(sqlStr, music_info)
+	_, err := getDB().NamedExec(sqlStr, music_info)
 	if err != nil {
 		fmt.Println("Insert into music failed(NamedExec): ", err)
 		return
@@ -138,7 +144,7 @@ func NameQuery() {
 	sqlStr := "select * from music_music where music_author=:music_author"
 
 	condition := model.Music{Author: "周杰伦"}
-	rows, err := tmpDB.NamedQuery(sqlStr, condition)
+	rows, err := getDB().NamedQuery(sqlStr, condition)
 	if err != nil {
 		fmt.Printf("NamedQuery failed: %v", err)
 		return
@@ -159,7 +165,7 @@ func NameQuery() {
 
 // TransactionCommitDemo 事务操作
 func TransactionCommitDemo() (err error) {
-	tx, err := tmpDB.Beginx()
+	tx, err := getDB().Beginx()
 	if err != nil {
 		fmt.Printf("begin trans failed, err: %v \n", err)
 		return err
@@ -206,7 +212,7 @@ func BatchInsertMusic(musicList []interface{}) error {
 	fmt.Println(InsertSql)
 	fmt.Println(args)
 
-	_, err := tmpDB.Exec(InsertSql, args...)
+	_, err := getDB().Exec(InsertSql, args...)
 	return err
 }
 
@@ -215,7 +221,7 @@ func BatchInsertMusicByNamed(musicList []*model.Music) error {
 	sqlStr := "INSERT INTO music_music (music_author, music_name, music_album, music_time, music_type, music_lyrics, music_arranger) VALUES " +
 		"(:music_author, :music_name, :music_album, :music_time, :music_type, :music_lyrics, :music_arranger)"
 
-	_, err := tmpDB.NamedExec(sqlStr, musicList)
+	_, err := getDB().NamedExec(sqlStr, musicList)
 	return err
 }
 
@@ -226,9 +232,9 @@ func QueryByNames(musicNames []string) (musicList []model.Music, err error) {
 	query, args, _ := sqlx.In(sqlStr, musicNames)
 	fmt.Println(query)
 
-	query = tmpDB.Rebind(query)
+	query = getDB().Rebind(query)
 	fmt.Println(query)
 
-	err = tmpDB.Select(&musicList, query, args...)
+	err = getDB().Select(&musicList, query, args...)
 	return
 }

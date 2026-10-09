@@ -1,3 +1,5 @@
+//go:build integration
+
 package concurrency_test
 
 import (

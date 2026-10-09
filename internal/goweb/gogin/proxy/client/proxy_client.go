@@ -101,9 +101,11 @@ func CommitDeviceTerminalReq(serviceAddress string) {
 	reqUrl := url.URL{Scheme: "ws", Host: serviceAddress, Path: endpoint}
 	ws, resp, err := websocket.DefaultDialer.Dial(reqUrl.String(), nil)
 	if err != nil {
-		body, _ := io.ReadAll(resp.Body)
-		log.Printf(string(body))
-		log.Printf(err.Error())
+		if resp != nil {
+			body, _ := io.ReadAll(resp.Body)
+			log.Print(string(body))
+		}
+		log.Print(err)
 		return
 	}
 
@@ -116,7 +118,7 @@ func CommitDeviceTerminalReq(serviceAddress string) {
 	}
 
 	if err := ws.WriteJSON(params); err != nil {
-		log.Printf(err.Error())
+		log.Print(err)
 		return
 	}
 
@@ -126,11 +128,11 @@ func CommitDeviceTerminalReq(serviceAddress string) {
 	for {
 		_, message, err := ws.ReadMessage()
 		if err != nil {
-			log.Printf(err.Error())
+			log.Print(err)
 			return
 		}
 
-		fmt.Printf(string(message))
+		fmt.Print(string(message))
 	}
 }
 
@@ -141,10 +143,10 @@ func ProxyShell(ws *websocket.Conn) {
 	for scanner.Scan() {
 		command := scanner.Text() + "\n"
 		if err := ws.WriteMessage(websocket.TextMessage, []byte(command)); err != nil {
-			log.Printf(err.Error())
+			log.Print(err)
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		log.Printf(err.Error())
+		log.Print(err)
 	}
 }

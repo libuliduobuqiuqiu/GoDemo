@@ -15,15 +15,6 @@ import (
 
 var gormDB *gorm.DB
 
-func init() {
-	tmp, err := InitDB()
-	if err != nil {
-		gormDB = tmp
-	}
-
-	rand.New(rand.NewSource(time.Now().UnixNano()))
-}
-
 func RandSlice[T any](d []T) T {
 	index := rand.Intn(len(d))
 	return d[index]
@@ -58,6 +49,9 @@ func GetDB() *gorm.DB {
 func InitDB() (db *gorm.DB, err error) {
 	dsn := pkg.GenMysqlDSN("")
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
 	db = db.Debug()
 	return
 }
@@ -82,6 +76,9 @@ func InitDBWithNewLogger() (db *gorm.DB, err error) {
 
 	dsn := pkg.GenMysqlDSN("")
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
+	if err != nil {
+		return nil, err
+	}
 	db = db.Debug()
 	return
 }
@@ -91,6 +88,9 @@ func InitDBByExistDB(existDB gorm.ConnPool) (db *gorm.DB, err error) {
 	db, err = gorm.Open(mysql.New(mysql.Config{
 		Conn: existDB,
 	}))
+	if err != nil {
+		return nil, err
+	}
 
 	db = db.Debug()
 	return

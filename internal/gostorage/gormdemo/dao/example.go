@@ -18,12 +18,12 @@ func insertOneRow() {
 	// 生成随机数据
 	err := faker.FakeData(&tmpUser)
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err)
 	}
 
 	result := db.Create(tmpUser)
 	if result.Error != nil {
-		log.Fatalf(result.Error.Error())
+		log.Fatal(result.Error)
 	}
 
 	fmt.Println("result RowsAffected: ", result.RowsAffected)
@@ -48,7 +48,7 @@ func InsertRows() {
 	result := db.Create(users)
 
 	if result.Error != nil {
-		log.Fatalf(result.Error.Error())
+		log.Fatal(result.Error)
 	}
 
 	fmt.Println("RowsAffected: ", result.RowsAffected)

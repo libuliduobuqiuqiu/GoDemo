@@ -50,7 +50,7 @@ func UploadFile(c *gin.Context) {
 	fmt.Println(username, password, address)
 	errmsg := CheckParam(username, password, address)
 	if errmsg != "" {
-		public.HandleErrJson(c, fmt.Errorf(errmsg))
+		public.HandleErrJson(c, fmt.Errorf("%s", errmsg))
 		return
 	}
 

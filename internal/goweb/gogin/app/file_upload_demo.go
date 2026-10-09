@@ -56,7 +56,7 @@ func UploadFile(c *gin.Context) {
 	fmt.Println(username, password, address)
 	errmsg := CheckParam(username, password, address)
 	if errmsg != "" {
-		HandleErrResponse(c, fmt.Errorf(errmsg))
+		HandleErrResponse(c, fmt.Errorf("%s", errmsg))
 		return
 	}
 

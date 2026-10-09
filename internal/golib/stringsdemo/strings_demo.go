@@ -62,5 +62,5 @@ func ConvertStringToInt64() {
 		fmt.Println(result)
 	}
 
-	fmt.Println(string(a))
+	fmt.Println(strconv.FormatInt(int64(a), 10))
 }

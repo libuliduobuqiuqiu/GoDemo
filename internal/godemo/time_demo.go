@@ -34,5 +34,5 @@ func FromUnixTime() {
 	c, _ := json.Marshal(b)
 	fmt.Println(b, string(c))
 
-	fmt.Printf(b)
+	fmt.Print(b)
 }

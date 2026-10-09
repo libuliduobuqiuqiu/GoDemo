@@ -46,5 +46,5 @@ func TestChan(t *testing.T) {
 		wg.Add(1)
 		go consumer.Consume(wg, data)
 	}
-
+	wg.Wait()
 }

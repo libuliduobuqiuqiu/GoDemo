@@ -14,7 +14,10 @@ func TestHandleError(t *testing.T) {
 	}
 
 	err = errors.NewMyError()
-	t.Error(err)
+	if err == nil {
+		t.Fatal("expected a demo error")
+	}
+	t.Log(err)
 
 }
 

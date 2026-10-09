@@ -16,6 +16,8 @@ import (
 	"unsafe"
 
 	"godemo/internal/godemo"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Test the slice expansion mechanism.
@@ -162,6 +164,9 @@ func TestLazyError(t *testing.T) {
 }
 
 func TestCountTime(t *testing.T) {
+	if os.Getenv("GO_DEMO_INTEGRATION") != "1" {
+		t.Skip("requires local log directory; set GO_DEMO_INTEGRATION=1 to run")
+	}
 	err := filepath.Walk("/data/Company/log/netac/oarsflow/", func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -289,4 +294,45 @@ func checkNumbers(num int) bool {
 
 func TestRangeNumbers(t *testing.T) {
 	RangeNumbers()
+}
+
+func GetServceSafeKey(key string) string {
+	// 去掉'/scm/'前缀，将'/'换成'_'
+	safeKey := key
+	safeKey = strings.TrimPrefix(safeKey, "/scm/")
+	safeKey = strings.ReplaceAll(safeKey, "/", "_")
+	safeKey = strings.ReplaceAll(safeKey, "-", "_")
+	return safeKey
+}
+
+func TestGetServceSafeKey(t *testing.T) {
+	t.Log("/scm/aops/default/scmd")
+
+	safeKey := GetServceSafeKey("/scm/aops/default/scmd")
+	fmt.Println(safeKey)
+	t.Log(safeKey)
+}
+
+func Ignore70xerror(err error) error {
+	if strings.Contains(err.Error(), "请求资源URL无法识别") {
+		logrus.WithError(err).Warn()
+		err = nil
+		return err
+	}
+
+	if strings.Contains(err.Error(), "请求资源uri无法识别") {
+		logrus.WithError(err).Warn()
+		err = nil
+		return err
+	}
+	logrus.WithError(err).Error()
+	return err
+}
+
+func TestRWLock(t *testing.T) {
+	var mu sync.RWMutex
+	mu.RLock()
+	mu.RLock()
+	defer mu.RUnlock()
+	defer mu.RUnlock()
 }
