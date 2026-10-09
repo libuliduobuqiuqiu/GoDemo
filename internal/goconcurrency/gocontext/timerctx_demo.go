@@ -3,46 +3,39 @@ package gocontext
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 )
 
-func UseTimerCtx() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	defer cancel()
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				fmt.Println("上下文取消：", ctx.Err())
-				return
-			default:
-				fmt.Println("等待取消中。。。")
-				time.Sleep(200 * time.Millisecond)
-			}
-		}
-	}()
-
-	wg.Wait()
+// WaitForCancellation returns the reason a context stopped.
+func WaitForCancellation(ctx context.Context) error {
+	<-ctx.Done()
+	return ctx.Err()
 }
 
-func GenNum(ctx context.Context) chan int {
+func UseTimerCtx() {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	fmt.Println("上下文取消：", WaitForCancellation(ctx))
+}
+
+func GenNum(ctx context.Context) <-chan int {
 	ch := make(chan int)
 
 	go func() {
+		defer close(ch)
 		var n int
 		for {
+			// Check cancellation before offering another value.
 			select {
 			case <-ctx.Done():
-				close(ch)
-				fmt.Println("Done.")
+				return
+			default:
+			}
+			select {
+			case <-ctx.Done():
 				return
 			case ch <- n:
 				n++
-				time.Sleep(1 * time.Second)
 			}
 		}
 	}()
@@ -61,5 +54,4 @@ func UseCancelGenNum() {
 			break
 		}
 	}
-	time.Sleep(10 * time.Second)
 }

@@ -4,7 +4,7 @@
 
 | 主题 | 文章 | 状态 | 相关代码 |
 | --- | --- | --- | --- |
-| 测试 | [Go 测试笔记](go_testing.md) | 局部校正，待全面复核 | [`test/manual`](../../test/manual/)、[`test/golib`](../../test/golib/) |
+| 测试 | [Go 测试笔记](go_testing.md) | 已整理并验证 | [`test/manual`](../../test/manual/)、[`test/golib`](../../test/golib/) |
 | 反射 | [反射笔记](go_reflect.md) | 原始笔记 | [`internal/gomanual/reflectdemo`](../../internal/gomanual/reflectdemo/) |
 | GORM | [GORM 笔记](go_gorm.md) | 原始笔记 | [`internal/gostorage/gormdemo`](../../internal/gostorage/gormdemo/) |
 | RPC | [RPC 笔记](go_rpc.md) | 原始笔记 | [`internal/gorpc`](../../internal/gorpc/) |

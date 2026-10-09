@@ -8,7 +8,8 @@
 | 泛型 | [泛型笔记](go_generics.md) | 原始笔记 | [`internal/gomanual/genericsdemo`](../../internal/gomanual/genericsdemo/) |
 | 错误处理 | [Go 错误处理](go_error.md) | 已整理并验证 | [`internal/godemo/errors`](../../internal/godemo/errors/)、[`test/godemo/errors_test.go`](../../test/godemo/errors_test.go) |
 | 文件与路径 | [文件操作](go_file.md) | 原始笔记 | [`internal/golib/osdemo`](../../internal/golib/osdemo/)、[`test/golib/filecopy_test.go`](../../test/golib/filecopy_test.go) |
-| 并发与上下文 | [并发笔记](go_concurrency.md) | 局部校正，待全面复核 | [`internal/goconcurrency`](../../internal/goconcurrency/) |
+| 并发控制实践 | [Channel、Context 与 sync.Cond](go_concurrency_practice.md) | 已整理并验证 | [`internal/goconcurrency`](../../internal/goconcurrency/) |
+| 并发与运行时 | [并发原始笔记](go_concurrency.md) | 局部校正，待全面复核 | [`internal/goconcurrency`](../../internal/goconcurrency/) |
 | 编译与逃逸 | [编译笔记](go_compile.md) | 原始笔记 | [`internal/godemo`](../../internal/godemo/) |
 | 垃圾回收 | [GC 笔记](go_gc.md) | 原始笔记 | [`internal/godemo/gc_demo.go`](../../internal/godemo/gc_demo.go) |
 

@@ -1,6 +1,9 @@
 package manual
 
-import "testing"
+import (
+	"testing"
+	"unicode/utf8"
+)
 
 func Reverse(s string) string {
 	tmp := []rune(s)
@@ -22,9 +25,13 @@ func FuzzReverse(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, a string) {
-
+		if !utf8.ValidString(a) {
+			t.Skip("Reverse operates on UTF-8 text")
+		}
 		second := Reverse(a)
 		third := Reverse(second)
-		t.Log(third)
+		if third != a {
+			t.Fatalf("reverse twice: got %q, want %q", third, a)
+		}
 	})
 }

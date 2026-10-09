@@ -28,7 +28,7 @@ go test -tags=integration -run '^TestGetUsers$' ./test/gostorage
 | `test/gostorage`、`test/gotool/ssh_test.go` | 本地 `configs/conf.json`，以及相应的数据库或 SSH 设备 |
 | `test/gogin`、`test/concurrency/chat`、`test/golib/httpdemo_test.go` | 相应的本地服务或设备；部分用例会启动服务并持续运行 |
 | `test/golib/filedemo_test.go`、`test/golib/osdemo_test.go`、`test/goothers`、`test/gotool` 中的文件演示 | 代码中指定的示例文件和目录；部分用例会写入或删除文件 |
-| `test/concurrency/channel_test.go`、`test/concurrency/context_test.go`、`test/concurrency/sync_test.go` | 部分演示使用长时间等待，或需要外部信号结束 |
+| `test/concurrency/channel_test.go`、`test/concurrency/context_test.go`、`test/concurrency/sync_test.go` | 文件中仍有较长时间运行的观察性演示；快速、可断言的并发测试位于 `internal/goconcurrency/` |
 | `test/golib/rate_test.go`、`test/pkg/traceroute_test.go` | 分别需要较长时间等待、特定网络环境 |
 
 `test/common_test.go` 中的 `TestCountTime` 还使用固定的本机日志目录；只有设置 `GO_DEMO_INTEGRATION=1` 才会运行。手动演示应逐个选择，不要一次运行整个带标签的测试集合。

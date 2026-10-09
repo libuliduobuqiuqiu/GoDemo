@@ -1,4 +1,6 @@
 ## 并发
+
+> 状态：局部校正，待全面复核。Channel、Context 和 sync.Cond 的可运行版本见[并发控制专题](go_concurrency_practice.md)；以下调度器和运行时细节仍是原始笔记，需要按 Go 版本逐条核对。
 常用并发控制：
 - WaitGroup
 - Context
@@ -262,31 +264,7 @@ func UseCancelCtx() {
 
 #### timerCtx
 
-> timerCtx是在cancelCtx的基础上增加了超时机制；提供了两个创建函数WithTimeOut和WithDeadline，前者是指定超时间隔，后者是具体指定超时时间；
-
-```go
-func UseTimerCtx() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	defer cancel()
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				fmt.Println("上下文取消：", ctx.Err())
-				return
-			default:
-				fmt.Println("等待取消中。。。")
-				time.Sleep(200 * time.Millisecond)
-			}
-		}
-	}()
-
-	wg.Wait()
-}
-```
+`context.WithTimeout` 指定时间间隔，`context.WithDeadline` 指定截止时刻；两者都会返回需要调用的 `cancel`。等待取消时使用 `ctx.Done()`，再从 `ctx.Err()` 得到原因。可运行代码、退出条件及测试见[并发控制专题](go_concurrency_practice.md)。
 
 ### 同步原语与锁
 > Go在sync包里面提供了基本的原语sync.Mutex:锁,sync.RWMutex:读写锁,sync.WaitGroup:等待组,sync.Cond:同步条件通知,sync.Once:懒加载，

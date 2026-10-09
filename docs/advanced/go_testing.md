@@ -1,237 +1,76 @@
-# Testing
+# Go 测试：从示例到自动验证
 
-## Go testing
+> 状态：已整理并验证；验证环境：Go 1.25。本文对应仓库中的 [测试示例](../../test/manual/) 与 [测试运行说明](../testing.md)。
 
-> 简单介绍Go官方支持的测试，以及日常开发过程中使用到的测试场景；
+## 四种入口
 
-Go test工具支持几种测试类型：
+| 类型 | 函数名与用途 | 仓库示例 |
+| --- | --- | --- |
+| 单元测试 | `TestXxx(t *testing.T)`，验证行为与边界 | [`example_test.go`](../../test/manual/example_test.go) |
+| 示例测试 | `ExampleXxx()`，用 `// Output:` 核对输出并生成文档 | [`example_test.go`](../../test/manual/example_test.go) |
+| 基准测试 | `BenchmarkXxx(b *testing.B)`，使用 `b.N` 驱动测量次数 | [`BenchmarkEqual`](../../test/manual/example_test.go) |
+| 模糊测试 | `FuzzXxx(f *testing.F)`，用种子和生成输入检查性质 | [`FuzzReverse`](../../test/manual/fuzz_reverse_test.go) |
 
-1. 示例测试
-2. 单元测试
-3. 基准测试
-4. 模糊测试
+测试文件以 `_test.go` 结尾。可以与被测代码同包，以便访问包内实现；也可以使用 `包名_test`，只通过公开接口测试。本仓库的部分早期演示集中在 `test/`，新增测试优先放在相关代码包中。
 
-### 规范
-
-测试规范：
-
-- 测试包，可以与被测代码同包，也可以使用 `包名_test` 从包外验证公开接口；本仓库的部分演示集中在 `test/` 下。
-- 测试文件，以 `_test.go` 结尾；文件名前缀可按主题命名，不要求按测试类型命名。
-- 测试函数，分别使用 `Example`、`Test`、`Benchmark`、`Fuzz` 前缀。
-
-### 执行测试
-
-go test 命令
-
-- 执行当前目录下的所有测试用例(.)；后面还可以接指定测试文件名称，单独测试该测试文件下的测试用例；（可支持正则表达式）
-- 执行当前测试文件下指定的测试用例（-run 测试用例名称，可支持正则表达式匹配）
-- 执行当前的基准测试（-bench 测试用例名称，可支持正则表达式）
+## 默认测试与手动演示
 
 ```bash
-go test -v sum_test.go -bench .
+go test ./...
+go test ./test/godemo -run '^TestHandleError$'
+go test -tags=integration -run '^$' ./...
 ```
 
-测试当前sum_test.go文件下的所有基准测试、示例测试、单元测试、模糊测试，并且详细输出具体测试信息
+第一条运行默认测试。第二条按名称运行一个用例。第三条编译带 `integration` 标签的手动演示，但不运行匹配不到的测试。即使使用 `-run '^$'`，包的初始化和 `TestMain` 仍会执行，所以不要在包导入时连接数据库或读取私有配置。需要设备、数据库或固定文件的演示应单独选择，见[测试运行说明](../testing.md)。
 
-```bash
-go test -v sum_test.go -bench . -run ^$
-```
+`-short` 只是向测试传递“缩短运行”的信号；只有测试代码主动检查 `testing.Short()` 时才会改变行为，不能替代 `integration` 标签。
 
-只测试sum_test.go文件下的所有基准测试，相当于-run限制了其余测试用例的名称
+## 写出能说明结果的测试
 
-执行测试命令常用参数：
+- 验证输出或状态，而不是只打印日志。错误应使用 `t.Fatal`、`t.Errorf` 等明确报告。
+- 文件操作使用 `t.TempDir()`；需要在测试结束时关闭资源，使用 `t.Cleanup()` 或合适的 `defer`。
+- 有 goroutine 的测试要有可观察的完成条件。靠固定 `time.Sleep` 等待容易慢，也可能漏掉尚未退出的 goroutine。
+- 表格测试适合覆盖多个输入；`t.Run` 给每个案例独立的名称。
 
-- -v：输出更详细的测试日志；
-- -count n：运行测试n次，默认是1次；
-- -bench regexp：选中regexp匹配的基准测试；
-- -benchmem：统计基准测试的内存分配；
-- -benchtime t: 基准测试运行足够的迭代（b.N)满足时间t（默认1s)；也可以通过Nx的方式控制b.N迭代次数；
-- -run regexp：选中的regexp匹配的测试用例;(单元测试、示例测试)
-- -fuzz regexp：选中regexp匹配的模糊测试；
-- -cpuprofile cpu.out：统计测试过程中的CPU使用情况并写入文件；
-- -memprofile mem.out：统计测试过程中的内存使用情况并写入文件；
-- -trace trace.out：将执行追踪情况写入文件；
+例如 [`filecopy_test.go`](../../test/golib/filecopy_test.go) 在临时目录写入源文件，并比较复制后的内容；[`cond_demo_test.go`](../../internal/goconcurrency/gosync/cond_demo_test.go) 验证所有等待者都被唤醒。
 
-TestMain初始化函数
+## TestMain
+
+只有整个测试包确实需要共享准备工作时才使用 `TestMain`。它必须传递 `m.Run()` 的退出码：
 
 ```go
 func TestMain(m *testing.M) {
- fmt.Println("Testing Start.")
- if err := initDevConf(); err != nil {
-  fmt.Println(err)
-  os.Exit(1)
- }
- code := m.Run()
- fmt.Println("Testing Done.")
- os.Exit(code)
+    code := m.Run()
+    os.Exit(code)
 }
 ```
 
-> `TestMain` 必须传递 `m.Run()` 的退出码，否则失败的测试可能被报告为成功。普通测试优先使用 `t.Cleanup` 管理局部资源；需要数据库或网络的演示见[测试与演示](../testing.md)。
+仓库中的[实际示例](../../test/manual/example_test.go)会在运行前后打印提示，并正确传递退出码。普通测试的资源准备优先放在测试函数内；不要让 `TestMain` 使包在新机器上无法运行。
 
-### 示例测试(Example)
+## 基准测试
 
-> 一般用于展示功能的使用方法，起到文档作用
-
-使用规范：
-
-- Example为测试函数前缀
-- 使用Output注释来检测输出，如果没有Output注释则不会视为示例测试，不会被go执行
-- Output输出支持，单行、多行、无序（Unorderd output)
-
-```go
-func ExampleSayHello() {
- SayHello()
- // Output:
- // hello
-}
-```
-
-### 单元测试(Test)
-
-> 对程序中最小可测单元进行测试（单元大小取决开发者：结构体、包、函数、类型）
-
-基础使用：
-
-- Test作为测试函数的前缀，传入参数必须为t *testing.T
-- t.Cleanup注册一个收尾函数结束测试
-- t.Helper()可以标记当前函数为帮助函数，测试打印过程只会显示帮助函数调用者的位置
-- t.Run()可以在测试用例中调用其他的测试用例，这种嵌套的测试用例称为子测试
-- 测试数据可以通过结构体切片的形式（表格风格）声明，更加方便直观
-
-Cleanup函数、Helper函数
-
-```go
-func CleanUpHepler(t *testing.T) {
- t.Helper()
- t.Log("test finished")
-}
-
-func TestEqual(t *testing.T) {
- t.Cleanup(func() {
-  CleanUpHepler(t)
- })
- a, b := myInt(101), myInt(101)
-
- if !genericsdemo.Equal[myInt](a, b) {
-  t.Errorf("equal(%d, %d) error", a, b)
- }
-}
-```
-
-### 基准测试(BenchMark)
-
-> 基准测试又叫做性能测试，常用于对程序的内存占用、CPU使用情况、执行耗时等性能指标；
-
-基础使用：
-
-- BenchMark作为测试函数的前缀，传入参数必须为b *testing.B
-
-```go
-func BenchmarkConcatDirect(b *testing.B) {
- for i := 0; i < b.N; i++ {
-  ConcatStringDirct(longString)
- }
-}
-```
-
-运行命令
+`b.N` 由测试框架决定；不要写死迭代次数。先排除普通测试，再用较短测量时间验证基准入口：
 
 ```bash
-go test bench_concat_test.go -v -bench . -count=2 -cpu=2,4,8 -v -benchmem
+go test ./test/manual -run '^$' -bench '^BenchmarkEqual$' -benchtime=100ms -benchmem
 ```
 
-运行结果
+输出中的 `ns/op` 表示每次操作耗时，`B/op` 和 `allocs/op` 分别表示每次操作的分配字节数与分配次数。结果受机器、Go 版本和负载影响；跨环境比较时要记录这些条件。
 
-```
-goos: linux
-goarch: amd64
-cpu: AMD Ryzen 7 5800H with Radeon Graphics         
-BenchmarkConcatDirect
-BenchmarkConcatDirect-2                3  432794775 ns/op 4040056592 B/op     9999 allocs/op
-BenchmarkConcatDirect-2                3  414416797 ns/op 4040056592 B/op     9999 allocs/op
-BenchmarkConcatDirect-4                3  456195014 ns/op 4040067536 B/op    10113 allocs/op
-BenchmarkConcatDirect-4                3  464858539 ns/op 4040068560 B/op    10123 allocs/op
-BenchmarkConcatDirect-8                3  477814948 ns/op 4040084624 B/op    10291 allocs/op
-BenchmarkConcatDirect-8                3  459436423 ns/op 4040085168 B/op    10296 allocs/op
-BenchmarkConcatWithBuilder
-BenchmarkConcatWithBuilder-2        1620     755694 ns/op  4128176 B/op       29 allocs/op
-BenchmarkConcatWithBuilder-2        1903     747043 ns/op  4128176 B/op       29 allocs/op
-BenchmarkConcatWithBuilder-4        1628     831750 ns/op  4128187 B/op       29 allocs/op
-BenchmarkConcatWithBuilder-4        1412     842513 ns/op  4128188 B/op       29 allocs/op
-BenchmarkConcatWithBuilder-8        1423     855130 ns/op  4128207 B/op       29 allocs/op
-BenchmarkConcatWithBuilder-8        1448     821266 ns/op  4128206 B/op       29 allocs/op
-PASS
-ok   command-line-arguments 25.414s
+## 模糊测试
+
+模糊测试应检查一个可以对大量输入成立的性质。例如有效 UTF-8 文本反转两次应得到原文，[`FuzzReverse`](../../test/manual/fuzz_reverse_test.go)先加入种子，再检查这个性质：
+
+```bash
+go test ./test/manual -run '^$' -fuzz '^FuzzReverse$' -fuzztime=3s
 ```
 
-- goos: 运行操作系统
-- goarch：CPU架构
-- cpu：CPU型号信息
-- 第一列：-2、-4、-8分别代表测试使用的最大CPU数量；
-- 第二列：代表循环迭代的次数b.N;
-- 第三列：每一次循环消耗的时间；
-- 第四列：每一次循环分配的内存大小；
-- 第五列：表示每一次循环内存分配的次数；
+不带 `-fuzz` 的默认 `go test` 仍会运行模糊测试的种子语料。随机生成的输入可能超出函数的有效范围；应在测试中明确前提，例如该示例只处理有效 UTF-8 文本。
 
-### 模糊测试
+## 并发测试
 
-> 模糊测试，可以通过语料库生成随机的测试数据；（随机测试更好的测试程序的边界条件）
-
-使用基础：
-
-- 函数前缀需要使用Fuzz，传入参数必须为f *testing.F
-- -fuzz 执行模糊测试是通过语料库，生成随机测试数据进行测试
-
-模糊测试字符串反转函数
-
-```go
-package manual
-
-import "testing"
-
-func Reverse(s string) string {
- tmp := []rune(s)
- for i, j := 0, len(tmp)-1; i < j; i, j = i+1, j-1 {
-  tmp[i], tmp[j] = tmp[j], tmp[i]
- }
- return string(tmp)
-}
-
-func FuzzReverse(f *testing.F) {
- data := []string{
-  "hello,world",
-  "what",
-  "fuzzy",
-  "zhangsan",
- }
-
- for _, v := range data {
-  f.Add(v)
- }
-
- f.Fuzz(func(t *testing.T, a string) {
-
-  second := Reverse(a)
-  third := Reverse(second)
-
-  if a != third {
-   t.Fatalf("before: %q, after: %q", a, third)
-  }
- })
-}
+```bash
+CGO_ENABLED=1 go test -race ./internal/goconcurrency/gochannel ./internal/goconcurrency/gocontext ./internal/goconcurrency/gosync
 ```
 
-- f.Add 往语料库添加数据
-- f.Fuzz 添加单元测试函数
-
-### 参考
-
-testing库：
-> <https://pkg.go.dev/testing@go1.22.3>
-
-模糊测试:
-> <https://go.dev/doc/security/fuzz/>
-
-参考文章：
-> <https://golang.halfiisland.com/essential/senior/120.test.html>
+`-race` 需要 CGO 和可用的 C 编译器；当前环境默认关闭 CGO，因此命令显式启用。它可发现执行路径上的数据竞争，但一次通过不能证明所有调度顺序都正确。并发测试仍要验证退出、关闭和取消条件；并发样例见[专题笔记](../base/go_concurrency_practice.md)。

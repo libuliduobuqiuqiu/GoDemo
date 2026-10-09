@@ -45,4 +45,12 @@ git diff --check
 
 验证：`go test ./test/godemo -run '^TestHandleError$'` 和 `go test -timeout 20s ./...` 通过；已检查 README 与 `docs/` 中 28 个 Markdown 文件的本地链接，未发现失效路径。
 
-下一批优先逐条复核并发与测试笔记，把长时间运行的演示改为可控、可观察的示例；随后整理数据库、RPC 和 Web 主题的运行前提与代码入口。原始笔记的“待复核”状态表示尚未确认其中所有结论，不能把目录索引当作内容正确性的证明。
+当时确定下一批先处理并发与测试笔记，再整理数据库、RPC 和 Web 的运行前提。原始笔记的“待复核”状态表示尚未确认其中所有结论，不能把目录索引当作内容正确性的证明。
+
+## 第三阶段：并发与测试专题（2026-10-09）
+
+- 增加[并发控制专题](base/go_concurrency_practice.md)，用 Channel、Context、`sync.Cond` 三个可结束的示例解释等待、取消和广播；旧并发笔记继续标注为待全面复核。
+- 将原先会无限等待的 `UseChannelSelect`、依赖十秒等待的 `UseTimerCtx`、依赖 Ctrl+C 的 `UseSyncCond` 改为可控示例。给每个核心行为增加包内测试，验证输入、取消和全部监听者完成。
+- 重写[测试笔记](advanced/go_testing.md)，用仓库实际代码解释默认测试、`TestMain`、基准测试、模糊测试与竞态检测。基准测试改用 `b.N`；字符串反转模糊测试现在检查双重反转性质，并明确有效 UTF-8 前提。
+
+验证结果：默认 `go test -timeout 20s ./...`、带标签的编译检查、并发包 `-count=10`、启用 CGO 的 `-race -count=3` 均通过；`BenchmarkEqual` 的短时运行与 `FuzzReverse` 的 2 秒模糊运行也通过。下一批整理数据库、RPC 与 Web：逐个明确最小运行环境、默认测试和手动演示的边界。

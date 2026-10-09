@@ -29,6 +29,8 @@ func ExampleSayBye() {
 
 type myInt int
 
+var benchmarkEqualResult bool
+
 func TestSumInt(t *testing.T) {
 	t.Cleanup(func() {
 		CleanUpHepler(t)
@@ -72,12 +74,12 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func BenchmarkEqual(t *testing.B) {
-	a, b := myInt(101), myInt(101)
+func BenchmarkEqual(b *testing.B) {
+	values := []myInt{100, 101}
+	var result bool
 
-	for i := 0; i < 99999; i++ {
-		if !genericsdemo.Equal[myInt](a, b) {
-			t.Errorf("equal(%d, %d) error", a, b)
-		}
+	for i := 0; i < b.N; i++ {
+		result = genericsdemo.Equal[myInt](values[i%len(values)], 101)
 	}
+	benchmarkEqualResult = result
 }

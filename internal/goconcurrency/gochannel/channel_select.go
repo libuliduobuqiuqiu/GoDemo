@@ -1,27 +1,38 @@
 package gochannel
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/go-faker/faker/v4"
 )
 
-func UseChannelSelect() {
-
-	chInt := make(chan int)
-	chString := make(chan string)
-
-	fmt.Println("Start.")
-
+// SelectFirst waits for one value or cancellation. A nil channel disables its case.
+func SelectFirst(ctx context.Context, numbers <-chan int, texts <-chan string) (string, error) {
 	select {
-	case i := <-chInt:
-		fmt.Println(i)
-	case j := <-chString:
-		fmt.Println(j)
+	case <-ctx.Done():
+		return "", ctx.Err()
+	case number, ok := <-numbers:
+		if !ok {
+			return "", errors.New("number channel closed")
+		}
+		return strconv.Itoa(number), nil
+	case value, ok := <-texts:
+		if !ok {
+			return "", errors.New("text channel closed")
+		}
+		return value, nil
 	}
+}
 
-	fmt.Println("Done.")
+func UseChannelSelect() {
+	numbers := make(chan int, 1)
+	numbers <- 42
+	value, err := SelectFirst(context.Background(), numbers, nil)
+	fmt.Println(value, err)
 }
 
 func UseChannelDone() {
