@@ -25,4 +25,4 @@
 | 数据库与 RPC | [`internal/gostorage`](../internal/gostorage/)、[`internal/gorpc`](../internal/gorpc/)；部分演示需要外部环境 |
 | Web 与框架 | [`internal/goweb`](../internal/goweb/)；运行前先看[测试运行说明](testing.md) |
 
-新增或整理笔记时，按[收纳与写作约定](knowledge-guide.md)填写结论、示例、边界和验证方式。项目改动与阶段结果记录在[整理日志](maintenance-log.md)。
+新增或整理笔记时，按[收纳与写作约定](knowledge-guide.md)填写结论、示例、边界和验证方式。后续工作见[知识库待办](../TODO.md)，阶段结果记录在[整理日志](maintenance-log.md)。
