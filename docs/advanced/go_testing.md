@@ -15,9 +15,9 @@ Go test工具支持几种测试类型：
 
 测试规范：
 
-- 测试包，测试文件通常单独放在一个包中，包通常命名为test
-- 测试文件，测试文件通常以_test.go结尾，如果需要更仔细的划分，可根据测试文件中的测试类型（例如：example_、benchmark_、fuzzy_为前缀）
-- 测试函数，不同的测试类型，测试函数命名前缀不同（示例测试：Example、单元测试：Test、基准测试：BenchMark、模糊测试：Fuzzy）
+- 测试包，可以与被测代码同包，也可以使用 `包名_test` 从包外验证公开接口；本仓库的部分演示集中在 `test/` 下。
+- 测试文件，以 `_test.go` 结尾；文件名前缀可按主题命名，不要求按测试类型命名。
+- 测试函数，分别使用 `Example`、`Test`、`Benchmark`、`Fuzz` 前缀。
 
 ### 执行测试
 
@@ -58,14 +58,16 @@ TestMain初始化函数
 func TestMain(m *testing.M) {
  fmt.Println("Testing Start.")
  if err := initDevConf(); err != nil {
-  return
+  fmt.Println(err)
+  os.Exit(1)
  }
- m.Run()
+ code := m.Run()
  fmt.Println("Testing Done.")
+ os.Exit(code)
 }
 ```
 
-> 对于需要初始化的测试场景，可以通过TestMain函数实现，比如数据库连接、网络连接、文件打开。
+> `TestMain` 必须传递 `m.Run()` 的退出码，否则失败的测试可能被报告为成功。普通测试优先使用 `t.Cleanup` 管理局部资源；需要数据库或网络的演示见[测试与演示](../testing.md)。
 
 ### 示例测试(Example)
 

@@ -2,7 +2,6 @@ package errors
 
 import (
 	"fmt"
-	"runtime/debug"
 
 	"github.com/pkg/errors"
 )
@@ -22,18 +21,17 @@ type MyError struct {
 }
 
 func (m MyError) Error() string {
-	return fmt.Sprintf("error occurred: %s\nStack: \n%s", m.msg, debug.Stack())
+	return m.msg
 }
 
-func (m MyError) UnWrap() error {
+func (m MyError) Unwrap() error {
 	return m.err
 }
 
 func NewMyError() error {
-	fmt.Println(string(debug.Stack()))
 	return MyError{
 		msg: "test my Error",
-		err: errors.New(fmt.Sprintf("test my Wrap Error")),
+		err: errors.New("test my Wrap Error"),
 	}
 }
 

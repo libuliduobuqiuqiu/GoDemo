@@ -1,24 +1,25 @@
 package godemo
 
 import (
+	stderrors "errors"
 	"godemo/internal/godemo/errors"
 	"godemo/pkg"
 	"testing"
 )
 
 func TestHandleError(t *testing.T) {
-
 	err := errors.HandleError()
-	if err != nil {
-		t.Log(err)
-	}
-
-	err = errors.NewMyError()
 	if err == nil {
-		t.Fatal("expected a demo error")
+		t.Fatal("expected a wrapped error")
 	}
-	t.Log(err)
 
+	var myErr errors.MyError
+	if !stderrors.As(err, &myErr) {
+		t.Fatalf("expected MyError in the chain, got %T", err)
+	}
+	if stderrors.Unwrap(myErr) == nil {
+		t.Fatal("expected MyError to expose its cause")
+	}
 }
 
 func TestStackError(t *testing.T) {

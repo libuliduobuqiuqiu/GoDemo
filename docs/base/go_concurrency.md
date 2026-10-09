@@ -125,8 +125,8 @@ Channel操作总结:
 |操作|nil channel|closed channel|not nil,not closed channel|
 | ---- | ---- | ---- |---- |
 |close| panic | panic | 正常关闭|
-|读<-ch| panic | 读到对应类型的零值 | 阻塞或者正常读取数据，缓冲型channel为空时和非缓冲型channel没有等待发送者时会阻塞 |
-|写ch<-|panic |panic | 阻塞或者正常写入数据，缓冲型channel buf满时和非缓冲型channel没有等待接收者是会阻塞 |
+|读<-ch| 永久阻塞 | 读到对应类型的零值；双返回值形式的 `ok` 为 `false`（缓冲区数据读完后） | 阻塞或者正常读取数据，缓冲型channel为空时和非缓冲型channel没有等待发送者时会阻塞 |
+|写ch<-|永久阻塞 |panic | 阻塞或者正常写入数据，缓冲型channel buf满时和非缓冲型channel没有等待接收者是会阻塞 |
 
 如何优雅关闭一个Channel？
 > 已知关闭一个已经关闭的channel和写入一个已经关闭的channel会出现panic
@@ -155,7 +155,7 @@ select：
 - select是一种管道多路复用的控制结构，通过同时监测多个管道是否可用；
 - select一般都有多个case和一个default组成，每个case是一个管道操作；
 - 当有多个case可用时，select会**伪随机**的选择一个case执行，当所有case不可用时，则执行default分支，如果没有default分支时，将会阻塞等待；
-- select配合for，可实现循环无限监测管道，直到退出，配合time.After设置超时，可实现超时退出，通过break跳出for循环；
+- select配合for，可实现循环监测管道；需要退出循环时使用 `return` 或带标签的 `break`，普通 `break` 只会退出 `select`；
 - select{}语句中什么case都没有，主协程会无限等待；
 
 Channel的几种使用场景：
@@ -308,4 +308,3 @@ Go的几种锁（使用场景）：
 并发场景：
 - 限制主协程在所有协程完成后才能执行；(sync.WaitGroup)
 - 内部实现就是计数器+信号量，协程开始时Add初始化信号量，结束后调用Done，计数-1，直到减为0，主协程会调用Wait一直阻塞等待计数为0时，才会被唤醒；
-
