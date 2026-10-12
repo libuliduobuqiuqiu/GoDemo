@@ -11,8 +11,11 @@ import (
 )
 
 func ExecBookDemo() {
-	var confPath = "/data/GoDemo/configs/local_conf.json"
-	mysqlStr := pkg.GenMysqlDSN(confPath)
+	mysqlStr, err := pkg.GenMysqlDSN("")
+	if err != nil {
+		log.Print(err)
+		return
+	}
 
 	db, err := gorm.Open(mysql.Open(mysqlStr))
 

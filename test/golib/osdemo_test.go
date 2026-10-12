@@ -4,6 +4,8 @@ package golib_test
 
 import (
 	"godemo/internal/golib/osdemo"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -18,14 +20,18 @@ func TestUseBufioMaxInsert(t *testing.T) {
 }
 
 func TestHandleFile(t *testing.T) {
-	if err := osdemo.HandleFile(); err != nil {
-		t.Fatal(t)
+	filePath := filepath.Join(t.TempDir(), "demo.txt")
+	if err := os.WriteFile(filePath, []byte("hello"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := osdemo.HandleFile(filePath); err != nil {
+		t.Fatal(err)
 	}
 }
 
 func TestPrintFilePath(t *testing.T) {
 
-	if err := osdemo.PrintFilePath("/data/GoDemo/"); err != nil {
+	if err := osdemo.PrintFilePath(t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 

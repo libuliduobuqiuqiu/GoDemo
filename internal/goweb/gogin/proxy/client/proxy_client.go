@@ -19,7 +19,10 @@ import (
 )
 
 func genProxySshReqParams() (data []byte, err error) {
-	config := pkg.GetGlobalConfig("")
+	config, err := pkg.GetGlobalConfig("")
+	if err != nil {
+		return nil, err
+	}
 	deviceConfig := config.F5Config
 	params := public.ProxySshParams{ProxyParams: public.ProxyParams{
 		Address:  deviceConfig.Host,
@@ -109,7 +112,11 @@ func CommitDeviceTerminalReq(serviceAddress string) {
 		return
 	}
 
-	config := pkg.GetGlobalConfig("")
+	config, err := pkg.GetGlobalConfig("")
+	if err != nil {
+		log.Print(err)
+		return
+	}
 
 	params := public.ProxyParams{
 		Username: config.F5Config.Username,

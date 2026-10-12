@@ -3,26 +3,23 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
-	"path"
-	"runtime"
 )
 
 const (
-	MysqlType  = "mysql"
-	ConfigPath = "/data/MyRepo/go-demo/configs/conf.json"
+	MysqlType     = "mysql"
+	ConfigPathEnv = "GO_DEMO_CONFIG"
 )
 
 type GlobalConfig struct {
 	SSHConfig      BaseConfig   `json:"ssh"`
 	F5Config       BaseConfig   `json:"f5"`
 	FTPConfig      BaseConfig   `json:"ftp"`
-	MysqlConfig    MysqlConfig  `json:"mysql,omiempty"`
-	CompanyMysql   MysqlConfig  `json:"company,omiempty"`
-	Company57Mysql MysqlConfig  `json:"company57,omiempty"`
-	Cookie         string       `json:"cookie,omiempty"`
-	Devices        []BaseConfig `json:"devices,omiempty"`
+	MysqlConfig    MysqlConfig  `json:"mysql"`
+	CompanyMysql   MysqlConfig  `json:"company"`
+	Company57Mysql MysqlConfig  `json:"company57"`
+	Cookie         string       `json:"cookie"`
+	Devices        []BaseConfig `json:"devices"`
 }
 
 type MysqlConfig struct {
@@ -37,49 +34,33 @@ type BaseConfig struct {
 	Port     int    `json:"port"`
 }
 
-func GetGlobalConfig(configPath string) GlobalConfig {
-
-	// 设置全局配置文件
+// GetGlobalConfig reads an explicit file path or GO_DEMO_CONFIG when the path is empty.
+func GetGlobalConfig(configPath string) (GlobalConfig, error) {
 	if configPath == "" {
-		tmpPath := GetCallerInfo()
-		if tmpPath != "" {
-			pkgDirName := path.Dir(tmpPath)
-			baseDirName := path.Dir(pkgDirName)
-			configPath = path.Join(baseDirName, "configs", "conf.json")
-		} else {
-			configPath = ConfigPath
-		}
+		configPath = os.Getenv(ConfigPathEnv)
+	}
+	if configPath == "" {
+		return GlobalConfig{}, fmt.Errorf("config path is empty: pass a path or set %s", ConfigPathEnv)
 	}
 
 	var globalConfig GlobalConfig
-	if _, err := os.Stat(configPath); err != nil {
-		log.Fatal(err)
-	}
-
 	fileContent, err := os.ReadFile(configPath)
 	if err != nil {
-		log.Fatal(err)
+		return GlobalConfig{}, fmt.Errorf("read config %q: %w", configPath, err)
 	}
 
-	if err = json.Unmarshal(fileContent, &globalConfig); err != nil {
-		log.Fatal()
+	if err := json.Unmarshal(fileContent, &globalConfig); err != nil {
+		return GlobalConfig{}, fmt.Errorf("parse config %q: %w", configPath, err)
 	}
-	return globalConfig
+	return globalConfig, nil
 }
 
-func GenMysqlDSN(configPath string) string {
-	config := GetGlobalConfig(configPath)
+func GenMysqlDSN(configPath string) (string, error) {
+	config, err := GetGlobalConfig(configPath)
+	if err != nil {
+		return "", err
+	}
 	mysqlConfig := config.MysqlConfig
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
-		mysqlConfig.Username, mysqlConfig.Password, mysqlConfig.Host, mysqlConfig.Port, mysqlConfig.Prefix)
-}
-
-func GetCallerInfo() string {
-	_, file, _, ok := runtime.Caller(1)
-	if !ok {
-		fmt.Printf("Unable to get caller info.")
-		return ""
-	}
-
-	return file
+		mysqlConfig.Username, mysqlConfig.Password, mysqlConfig.Host, mysqlConfig.Port, mysqlConfig.Prefix), nil
 }

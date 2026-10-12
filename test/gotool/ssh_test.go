@@ -10,7 +10,10 @@ import (
 
 func TestDeviceClient(t *testing.T) {
 
-	gbCfg := pkg.GetGlobalConfig("")
+	gbCfg, err := pkg.GetGlobalConfig("")
+	if err != nil {
+		t.Fatal(err)
+	}
 	devices := gbCfg.Devices
 
 	if len(devices) > 0 {

@@ -164,10 +164,11 @@ func TestLazyError(t *testing.T) {
 }
 
 func TestCountTime(t *testing.T) {
-	if os.Getenv("GO_DEMO_INTEGRATION") != "1" {
-		t.Skip("requires local log directory; set GO_DEMO_INTEGRATION=1 to run")
+	logDir := os.Getenv("GO_DEMO_LOG_DIR")
+	if os.Getenv("GO_DEMO_INTEGRATION") != "1" || logDir == "" {
+		t.Skip("set GO_DEMO_INTEGRATION=1 and GO_DEMO_LOG_DIR to a local log directory")
 	}
-	err := filepath.Walk("/data/Company/log/netac/oarsflow/", func(filePath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(logDir, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

@@ -56,7 +56,11 @@ func Connect(s pkg.BaseConfig, cmd string) {
 }
 
 func ExecF5Command() {
-	f5Config := pkg.GetGlobalConfig("")
+	f5Config, err := pkg.GetGlobalConfig("")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	config := f5Config.F5Config
 	cmd := "tmsh list sys softwareddd;\nifconfig lo"
 	Connect(config, cmd)

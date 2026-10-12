@@ -29,7 +29,10 @@ func getDB() *sqlx.DB {
 }
 
 func InitDB() (db *sqlx.DB, err error) {
-	dsn := pkg.GenMysqlDSN("")
+	dsn, err := pkg.GenMysqlDSN("")
+	if err != nil {
+		return nil, err
+	}
 	db, err = sqlx.Connect(pkg.MysqlType, dsn)
 	return
 }

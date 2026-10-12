@@ -4,14 +4,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 )
-
-var filePath = "/data/GoDemo/internal/golib/osdemo/demo.json"
-var newFilePath = "/data/GoDemo/internal/golib/osdemo/demo2.json"
-var basePath = "/data/GoDemo/internal/golib/osdemo/"
 
 func readFileData(f *os.File) (data string, err error) {
 
@@ -26,7 +22,7 @@ func readFileData(f *os.File) (data string, err error) {
 	return
 }
 
-func SimpleOpenFile() error {
+func SimpleOpenFile(filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -38,8 +34,8 @@ func SimpleOpenFile() error {
 	return nil
 }
 
-func AdvancedOpenFile() error {
-	file, err := os.OpenFile(filePath, os.O_WRONLY, 0666)
+func AdvancedOpenFile(filePath string) error {
+	file, err := os.OpenFile(filePath, os.O_RDONLY, 0)
 	if err != nil {
 		return err
 	}
@@ -50,7 +46,7 @@ func AdvancedOpenFile() error {
 	return nil
 }
 
-func SimpleReadFile() error {
+func SimpleReadFile(filePath string) error {
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -61,7 +57,7 @@ func SimpleReadFile() error {
 	return nil
 }
 
-func AdvancedReadFile() (data []byte, err error) {
+func AdvancedReadFile(filePath string) (data []byte, err error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return
@@ -102,7 +98,7 @@ func IOReadFile(targetPath string) error {
 	return nil
 }
 
-func SimpleWriteFile() error {
+func SimpleWriteFile(filePath string) error {
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err
@@ -119,9 +115,9 @@ func SimpleWriteFile() error {
 	return nil
 }
 
-func AdvancedWriteFile() error {
+func AdvancedWriteFile(basePath string) error {
 
-	path := path.Join(basePath, "demo3.json")
+	path := filepath.Join(basePath, "demo3.json")
 	err := os.WriteFile(path, []byte("hello,world\nhello,world\n"), 0666)
 	if err != nil {
 		return err
@@ -130,11 +126,12 @@ func AdvancedWriteFile() error {
 	return nil
 }
 
-func IOWriteFile() error {
-	file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0666)
+func IOWriteFile(newFilePath string) error {
+	file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	fmt.Println("文件打开成功： ", file.Name())
 	for i := 0; i < 6; i++ {
@@ -149,7 +146,7 @@ func IOWriteFile() error {
 }
 
 // 简单读取文件然后写入另外一个文件
-func SimpleCopyFile() error {
+func SimpleCopyFile(filePath, newFilePath string) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return err

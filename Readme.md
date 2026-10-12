@@ -49,6 +49,8 @@ go test ./...
 
 需要外部服务、固定文件或交互的演示使用 `integration` 构建标签，详见[测试与演示说明](docs/testing.md)。
 
+数据库、SSH 等演示需要配置时，复制 `configs/conf_demo.json` 到已被 Git 忽略的 `configs/conf.json`，填入本机连接信息，然后设置 `GO_DEMO_CONFIG` 指向该文件。也可以在代码中显式传入配置路径；显式路径优先。默认构建和测试无需配置文件。
+
 项目整理过程与验证结果见[整理记录](docs/maintenance-log.md)。
 
 ## 贡献指南

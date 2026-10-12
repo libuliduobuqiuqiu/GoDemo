@@ -49,12 +49,13 @@ func AutomaticReadFile(filePath string) (string, error) {
 	return string(body), err
 }
 
-func HandleFile() error {
+func HandleFile(filePath string) error {
 
-	f, err := os.Open("/root/install_etcd.sh")
+	f, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	fmt.Println(f.Stat())
 
 	_, err = ControllReadFile(f)

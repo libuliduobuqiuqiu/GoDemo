@@ -19,7 +19,11 @@ func GetDB(config pkg.MysqlConfig) (db *sql.DB, err error) {
 }
 
 func ExecSQLStr() {
-	globalConfig := pkg.GetGlobalConfig("")
+	globalConfig, err := pkg.GetGlobalConfig("")
+	if err != nil {
+		log.Print(err)
+		return
+	}
 	mysqlConfig := globalConfig.MysqlConfig
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
@@ -50,7 +54,10 @@ func ExecSQLStr() {
 }
 
 func UpdateUser() error {
-	dsn := pkg.GenMysqlDSN("")
+	dsn, err := pkg.GenMysqlDSN("")
+	if err != nil {
+		return err
+	}
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return err

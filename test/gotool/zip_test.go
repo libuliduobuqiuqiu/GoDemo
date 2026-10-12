@@ -4,21 +4,28 @@ package gotool
 
 import (
 	"godemo/internal/gotool/compressdemo"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
 func TestCompressZipFile(t *testing.T) {
-	dirPath := "/root/PythonScript/"
-	err := compressdemo.CompressFiles(dirPath, "PythonScript.zip")
+	dirPath := os.Getenv("GO_DEMO_ARCHIVE_SOURCE_DIR")
+	if dirPath == "" {
+		t.Skip("set GO_DEMO_ARCHIVE_SOURCE_DIR to a local directory")
+	}
+	err := compressdemo.CompressFiles(dirPath, filepath.Join(t.TempDir(), "demo.zip"))
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestUnCompressZipFile(t *testing.T) {
-	zipPath := "/data/Bak/ebook.zip"
-	bakPath := "/data/Bak/"
-	err := compressdemo.UnCompressZip(zipPath, bakPath)
+	zipPath := os.Getenv("GO_DEMO_ARCHIVE_ZIP")
+	if zipPath == "" {
+		t.Skip("set GO_DEMO_ARCHIVE_ZIP to a local .zip file")
+	}
+	err := compressdemo.UnCompressZip(zipPath, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -10,15 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	confPath = "/data/MyRepo/go-demo/configs/local_conf.json"
-)
-
 func main() {
-	mysqlDSN := pkg.GenMysqlDSN(confPath)
-
-	if mysqlDSN == "" {
-		return
+	mysqlDSN, err := pkg.GenMysqlDSN("")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	db, err := gorm.Open(mysql.Open(mysqlDSN))

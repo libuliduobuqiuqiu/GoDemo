@@ -47,7 +47,10 @@ func GetDB() *gorm.DB {
 }
 
 func InitDB() (db *gorm.DB, err error) {
-	dsn := pkg.GenMysqlDSN("")
+	dsn, err := pkg.GenMysqlDSN("")
+	if err != nil {
+		return nil, err
+	}
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
@@ -74,7 +77,10 @@ func InitDBWithNewLogger() (db *gorm.DB, err error) {
 			Colorful:                  false,         // Disable color
 		})
 
-	dsn := pkg.GenMysqlDSN("")
+	dsn, err := pkg.GenMysqlDSN("")
+	if err != nil {
+		return nil, err
+	}
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
 	if err != nil {
 		return nil, err
