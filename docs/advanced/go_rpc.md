@@ -1,40 +1,31 @@
-# Rpc
+# gRPC：本机 Hello World 示例
 
-## 基础
+> 状态：已整理并验证；验证环境：Go 1.25，仓库使用 `google.golang.org/grpc` v1.41.0。关联代码：[`internal/gorpc/helloworld`](../../internal/gorpc/helloworld/)。
 
-grpc协议基于http2协议，相对于http1协议的优点：
+## 场景与结论
 
-- 传输的是二进制数据，性能好、效率高；
-- 序列化和反序列化直接对应程序中的类，不需要解析后进行映射；
-- 支持多种语言；
+这个示例展示一次最小的 gRPC 一元调用：[`hello.proto`](../../internal/gorpc/helloworld/protobuf/hello.proto) 定义请求、响应和 `SayHello.Hello` 方法；[服务端](../../internal/gorpc/helloworld/server/main.go) 注册实现；[客户端](../../internal/gorpc/helloworld/client/main.go) 建立连接并发送请求。
 
-grpc使用：
+客户端用同一个 5 秒截止时间约束连接和 RPC，连接失败与调用失败分别报告错误，并在退出时关闭连接。服务端仅监听 `127.0.0.1:8090`；客户端使用无 TLS 的连接凭据，因此此示例只用于本机演示。
 
-- 定义protobuf文件，具体包含接口和数据结构;
-- 使用protoc工具编译protobuf文件，生成对应的客户端和服务端的代码；
-- 在服务端实现对应业务逻辑代码；
-- 在客户端建立gRPC连接，自动生成代码调用函数；
+## 运行与验证
 
-## 安装
+在仓库根目录打开两个终端。先启动服务端：
 
-1. 安装probuf编译器
-
-```shell
- apt install -y protobuf-compiler
+```bash
+go run ./internal/gorpc/helloworld/server
 ```
 
-2. 安装代码生成器，将对应proto文件生成对应语言的代码文件
+再运行客户端：
 
-```shell
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```bash
+go run ./internal/gorpc/helloworld/client
 ```
 
-3. 修改环境变量(.zshrc)
+客户端应输出 `hello, world zhangsan`；服务端会记录收到的请求。运行完毕后在服务端终端按 Ctrl+C。若服务端未启动，客户端应在约 5 秒内报告连接超时，而不会一直等待。默认 `go build ./...` 和 `go test ./...` 无需启动服务端，也无需安装 `protoc`：生成的 Go 文件已保存在仓库中。
 
-```
-export PATH=$PATH:/root/go/bin
-```
+## 范围与后续
 
-grpc 参考文档：
-> <https://golang.halfiisland.com/community/mirco/gprc.html>
+[`internal/gorpc/chat`](../../internal/gorpc/chat/) 目前只有协议定义和生成代码；客户端、服务端仍是占位包，详见[目录说明](../../internal/gorpc/chat/README.md)。这个示例尚不能运行。
+
+Hello World 演示不涵盖 TLS、认证、流式调用或部署配置。需要从 `.proto` 重新生成代码时，再安装与仓库配置匹配的 Protocol Buffers 工具链；运行现有示例不需要重新生成代码。

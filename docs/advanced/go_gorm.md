@@ -1,176 +1,54 @@
-# Gorm
+# GORM：连接、查询与事务
 
-> 整理提问、日常使用逐步形成笔记。
+> 状态：核心 API 已复核，待真实数据库验证；适用版本：仓库的 `gorm.io/gorm` v1.25.12、`gorm.io/driver/mysql` v1.5.7；代码入口：[`gormdemo`](../../internal/gostorage/gormdemo/) 与 [`TestStorageRoundTrip`](../../test/gostorage/roundtrip_test.go)。
 
-如何设计一个数据库引擎？需要具备哪些功能？
+## 场景
 
-1. 数据库连接（支持不同类型数据进行创建、关闭、管理连接功能，支持连接池管理）
-2. ORM核心功能：
-    - 模型定义与映射
-    - CRUD操作
-    - 链式调用
-    - 事务支持
-3. 查询生成：
-    - SQL构造器（动态构造复杂SQL语句）
-    - 预编译，参数化（防止SQL注入）
-    - 分页、排序、条件查询
-4. 模型验证与钩子：
-    - 字段验证
-5. 高级功能：
-    - 支持一对多，多对多关联关系
-    - 预加载数据
-    - 自定义SQL执行
-6. 日志和调试
-    - SQL查询日志
-    - 支持性能分析
+仓库用 GORM 演示 MySQL 模型映射、查询、关联和事务。先运行[独立数据库往返测试](go_database.md)，确认配置和连接可用，再按需阅读依赖 `users`、`company` 等预置表的旧演示。这里使用 GORM 的传统 `*gorm.DB` API；官方文档也展示了较新的泛型 API，本仓库尚未采用。
 
-## 数据库连接
+## 连接与模型
 
-mysql两种方式建立连接：
+[`gormdemo.InitDB`](../../internal/gostorage/gormdemo/public.go) 从 `GO_DEMO_CONFIG` 指定的 JSON 读取 MySQL 配置，再创建 GORM 连接；[`InitDBByExistDB`](../../internal/gostorage/gormdemo/public.go) 可复用已有的 `database/sql` 连接池，往返测试通过 sqlx 的 `*sqlx.DB` 验证此路径。调用方应处理初始化错误，并在持有底层连接池时负责关闭它。旧演示中的 `GetDB()` 在连接失败时调用 `log.Fatal`，不适合在需要恢复错误的库代码中沿用。
 
-1. 通过dsn（data source name)新建一个mysql连接,然后初始化*gorm.DB;
-2. 通过已存在的mysql连接，初始化*gorm.DB;
+[`model.User`](../../internal/gostorage/gormdemo/model/user.go) 明确设置主键、列名和关联。GORM 默认把 `ID` 识别为主键，把字段名转成蛇形列名；`CreatedAt`、`UpdatedAt` 字段只有在模型中定义时才会自动维护。自定义列名用 `gorm:"column:列名"`，多个设置用分号分隔，例如 `gorm:"primaryKey;column:id"`。本仓库的 `User` 没有 `CreatedAt` 或 `UpdatedAt` 字段。[官方约定说明](https://gorm.io/docs/conventions.html)
 
-## ORM核心功能
+## 查询与错误处理
 
-### 基础CRUD操作
-
-基础的增删改查操作？
-
-### 模型定义
-
-如何模型定义，字段标签的作用？
-
-1. 模型用普通结构体定义，
-    - 使用一个默认ID为主键
-    - 表名默认将结构体名转换为snake_case结构体并且加上复数
-    - 列名默认将字段名转换为snake_case结构体
-    - Gorm使用字段CreateAt和UpdateAt用来自动跟踪记录中的创建和更新时间
-2. 常用字段标签：
-    - column
-    - type
-    - primary key
-    - unique key
-    - default
-    - comment
-
-### 事务支持
-
-怎么进行事务操作？怎么在事务中执行多个操作？事务底层原理？
-调用事务函数，自定义函数中执行的业务逻辑,函数中可以执行多个操作，当某个操作异常或者业务逻辑返回错误，回滚之前操作。
+传统 API 在执行查询后检查返回的 `*gorm.DB.Error`；`First`、`Take` 找不到记录会返回 `gorm.ErrRecordNotFound`，`Find` 查询结果为空时通常应看 `RowsAffected` 或切片长度。仓库的 [`dao.GetUsers`](../../internal/gostorage/gormdemo/dao/user.go) 展示 `Select`、`Limit`、`Where` 和 `Take`，但它依赖已有的 `users` 表及匹配 `email` 的数据，不适合作为首次运行命令。[官方错误处理说明](https://gorm.io/docs/error_handling.html)
 
 ```go
-err = db.Transaction(func(tx *gorm.DB) (err error) {
+var user model.User
+err := db.Where("email = ?", email).Take(&user).Error
+if errors.Is(err, gorm.ErrRecordNotFound) {
+    // 记录不存在
+} else if err != nil {
+    // 连接、SQL 或其他错误
 }
 ```
 
-还可以通过手动执行事务
+参数值使用 `?` 占位符传入。表名、列名等 SQL 标识符不能作为值参数传入；独立往返测试只用程序生成的固定前缀表名。
+
+## 事务与关联
+
+`db.Transaction` 的回调返回 `nil` 时提交，返回错误时回滚；回调中的操作必须使用传入的 `tx`。[`TestStorageRoundTrip`](../../test/gostorage/roundtrip_test.go) 在事务里更新后故意返回错误，再用 sqlx 核对值未改变。旧的 [`dao.InsertUserByTrans`](../../internal/gostorage/gormdemo/dao/user.go) 也故意返回回滚错误，但随后尝试读取已经回滚的记录，因此不应用作成功路径演示。[官方事务说明](https://gorm.io/docs/transactions.html)
 
 ```go
-tx := db.Begin()
-// db操作
-tx.Create()
-// 错误回滚
-tx.Rollback()
-// 提交操作
-tx.Commit()
+err := db.Transaction(func(tx *gorm.DB) error {
+    if err := tx.Model(&user).Update("username", "new-name").Error; err != nil {
+        return err
+    }
+    return nil
+})
 ```
 
-## 查询生成
+[`dao.UseGormPreload`](../../internal/gostorage/gormdemo/dao/user.go) 对 `Company.Users` 使用 `Preload`，它通过额外查询加载关联；[`dao.UseGormJoin`](../../internal/gostorage/gormdemo/dao/user.go) 对 `User.Company` 使用 `Joins`，通过联接查询加载单值关联。两者依赖既有表和外键数据，尚未纳入独立往返测试。[官方预加载说明](https://gorm.io/docs/preload.html)
 
-### 链式调用
+## 验证与边界
 
-链式调用什么用，链式调用怎么用？
-简单来说链式调用，更加简洁优雅，同时能让逻辑代码保持连贯性；
+准备专用 MySQL 数据库后，按[数据库实践](go_database.md)配置并执行：
 
-```go
-  if err := db.Select("id", "email", "username").Limit(10).Find(&userList).Error; err != nil {
-  return err
- }
-
- if err := db.Where("email like ?", "%com").Take(&user).Error; err != nil {
-  return err
- }
+```bash
+go test -tags=integration -run '^TestStorageRoundTrip$' -v ./test/gostorage
 ```
 
-链式调用主要分为三部分：Chain Methods,Finsher Methods, New Session Methods.
-
-### SQL构建器
-
-如何执行原生SQL？DryRun模式有什么用？
-
-```go
-// 原生SQL查询
-db.Raw().Scan()
-// 原生SQL执行
-db.Exec()
-```
-
-DryRun模式可以在不执行的情况下，生成SQL;
-
-```go
-stmt := db.Session(&gorm.Session{DryRun: true}).Where("email like ?", "%.com").Find(&userList).Statement
-fmt.Println(stmt.SQL.String())
-fmt.Println(stmt.Vars)
-```
-
-### 模型验证与钩子
-
-### 钩子
-
-钩子是在什么？在什么时候执行？如果钩子出现异常之后，会导致什么结果？
-钩子就是回调函数，可以在创建、更新、删除操作前后调用；
-
-```go
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
- u.ID = uuid.New()
- return nil
-}
-```
-
-Gorm中操作默认是开启事务，当钩子出现异常时会对操作进行回滚。
-
-## 高级功能
-
-### 预加载
-
-预加载作用？Preload 和Join有什么区别？
-预加载就是可以在查询数据时，自动加载关联关系数据的方法。Preload是通过单独的查询加载关联数据，Join则是通过左连接查询关联数据；
-
-```go
-// Preload 预加载
-if err := db.Preload("Users").Limit(10).Find(&companys).Error; err != nil {
-  return err
- }
-// 实际：
-// SELECT * FROM `company` LIMIT 3
-// SELECT * FROM `users` WHERE `users`.`company_code` IN ()
-
-// Join 预加载
-if err := db.Joins("Company").Limit(10).Find(&users).Error; err != nil {
-  return err
- }
-// 实际:
-// SELECT `users`.`id`,`users`.`email`,`users`.`password`,`users`.`phone_number`,`users`.`username`,`users`.`first_name`,`users`.`last_name`,`users`.`century`,`users`.`date`,`users`.`company_code`,`Company`.`id` AS `Company__id`,`Company`.`code` AS `Company__code`,`Company`.`name` AS `Company__name` FROM `users` LEFT JOIN `company` `Company` ON `users`.`company_code` = `Company`.`id` LIMIT 10
-
-```
-
-> 条件预加载？自定义预加载？嵌套预加载？(实际使用场景)
-
-## 日志和调试
-
-怎么设置慢查询打印时间，怎么自定义日志输出，怎么自定义Logger?
-
-```go
-newLogger := logger.New(log.New(rotateLogger, "\r\n", log.LstdFlags),
-  logger.Config{
-   SlowThreshold:             time.Second,   // Slow SQL threshold
-   LogLevel:                  logger.Silent, // Log level
-   IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
-   ParameterizedQueries:      true,          // Don't include params in the SQL log
-   Colorful:                  false,         // Disable color
-  })
-db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
-```
-
-可以考虑zap作为logger，gorm打印通过zap logger进行打印,具体需要自定义实现gorm logger接口，git上有类似开源组件。
+默认 `go test ./...` 不连接数据库。此测试覆盖连接池复用、读取、更新和事务回滚；旧业务表上的关联、GORM Gen、钩子、日志与所有 DAO 函数仍需逐项验证，不能由该测试推断为已通过。

@@ -27,17 +27,17 @@ export GO_DEMO_CONFIG="$PWD/configs/conf.json"
 go test -tags=integration -run '^$' ./...
 ```
 
-运行手动演示时，请指定包和测试名称。例如，在准备好 MySQL 配置与服务后：
+运行手动演示时，请指定包和测试名称。例如，在准备好[专用 MySQL 测试数据库](advanced/go_database.md)及配置后：
 
 ```bash
-go test -tags=integration -run '^TestGetUsers$' ./test/gostorage
+go test -tags=integration -run '^TestStorageRoundTrip$' -v ./test/gostorage
 ```
 
 不同演示的前提如下：
 
 | 位置 | 运行前提 |
 | --- | --- |
-| `test/gostorage`、`test/gotool/ssh_test.go` | 设置 `GO_DEMO_CONFIG` 指向填好的配置文件，并准备相应的数据库或 SSH 设备 |
+| `test/gostorage`、`test/gotool/ssh_test.go` | 设置 `GO_DEMO_CONFIG` 指向填好的配置文件，并准备相应的数据库或 SSH 设备；数据库最小验证见[sqlx 与 GORM 往返验证](advanced/go_database.md) |
 | `test/gogin`、`test/concurrency/chat`、`test/golib/httpdemo_test.go` | 相应的本地服务或设备；部分用例会启动服务并持续运行 |
 | `test/golib/osdemo_test.go`、`test/goothers`、`test/gotool` 中的手动文件演示 | 按具体用例准备输入；部分用例会写入或删除文件。归档用例通过 `GO_DEMO_ARCHIVE_SOURCE_DIR`、`GO_DEMO_ARCHIVE_TGZ`、`GO_DEMO_ARCHIVE_ZIP` 指定输入，输出位于临时目录 |
 | `test/concurrency/channel_test.go`、`test/concurrency/context_test.go`、`test/concurrency/sync_test.go` | 文件中仍有较长时间运行的观察性演示；快速、可断言的并发测试位于 `internal/goconcurrency/` |

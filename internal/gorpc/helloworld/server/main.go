@@ -20,7 +20,7 @@ func (g *GrpcServer) Hello(c context.Context, req *gen.HelloReq) (*gen.HelloResp
 }
 
 func main() {
-	listener, err := net.Listen("tcp", ":8090")
+	listener, err := net.Listen("tcp", "127.0.0.1:8090")
 	if err != nil {
 		log.Fatal(err)
 	}

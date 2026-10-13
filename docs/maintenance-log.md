@@ -67,3 +67,16 @@ git diff --check
 - 文件操作演示改为接收路径，`test/golib/filedemo_test.go` 使用 `t.TempDir()` 进入默认测试。手动归档演示从环境变量读取输入、写入临时目录；日志目录演示由 `GO_DEMO_LOG_DIR` 指定。
 - `Makefile` 的交叉编译目标只为当前 `go build` 命令设置环境变量，不再写入全局 `go env`。配置和手动演示的准备步骤见[测试与演示](testing.md)。
 - 验证：Go 1.25.5 下 `go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`git diff --check` 均通过；`make -n wsl` 和 `make -n mac` 确认不再执行 `go env -w`。数据库和 SSH 的真实连接仍需在对应环境中验证。
+
+## 第六阶段：完成 RPC 基础示例（2026-10-13）
+
+- Hello World 客户端现在用 5 秒上下文约束连接与调用，区分连接和 RPC 错误，并在结束时关闭连接；服务端只监听本机地址。
+- [RPC 笔记](advanced/go_rpc.md)写明启动顺序、预期输出和本机无 TLS 的适用边界。[chat 目录](../internal/gorpc/chat/README.md)标明协议代码已生成、客户端和服务端尚未实现；进阶索引与待办状态同步更新。
+- 验证：`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...` 均通过。未启动服务端时客户端约 5 秒返回超时；本机启动服务端后，客户端输出 `hello, world zhangsan`，服务端记录收到 `zhangsan` 请求。数据库和 Web 示例仍按后续待办处理。
+
+## 第七阶段：数据库最小路径与待办盘点（2026-10-13）
+
+- 增加独立的 [`TestStorageRoundTrip`](../test/gostorage/roundtrip_test.go)：sqlx 插入记录，GORM 读取、更新并在事务错误时回滚，最后由 sqlx 核对结果。测试只使用运行时创建的表，并在正常退出时清理；它保留在 `integration` 标签下。
+- 增加[数据库准备与清理说明](advanced/go_database.md)，重写[GORM 笔记](advanced/go_gorm.md)的连接、模型、查询和事务部分，修正示例模型中的 GORM 字段标签。进阶索引与[待办](../TODO.md)同步区分“已写好最小路径”和“待真实数据库验证”。
+- 在 Go 1.25.0 下，`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...` 与 `git diff --check` 通过。当前环境没有运行 `TestStorageRoundTrip` 所需的专用 MySQL 数据库；带标签命令仅编译测试。实际连接、建表、读写、回滚和清理仍需按文档验收。
+- 后续按待办顺序处理 Gin 基础路由及代理行为，再逐篇复核旧笔记。已有 sqlx、GORM 演示中依赖预置业务表的部分仍属单独验证范围。

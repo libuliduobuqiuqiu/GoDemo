@@ -8,15 +8,15 @@ import (
 const UserTableName = "users"
 
 type User struct {
-	ID          string  `gorm:"primaryKey,column:id" faker:"-"`
+	ID          string  `gorm:"primaryKey;column:id" faker:"-"`
 	Email       string  `gorm:"column:email" faker:"email"`
 	Password    string  `gorm:"column:password" faker:"password"`
 	PhoneNumber string  `gorm:"column:phone_number" faker:"phone_number"`
 	UserName    string  `gorm:"column:username" faker:"username"`
-	FirstName   string  `gorm:"first_name" faker:"first_name"`
-	LastName    string  `gorm:"last_name" faker:"last_name"`
-	Century     string  `gorm:"century" faker:"century"`
-	Date        string  `gorm:"date" faker:"date"`
+	FirstName   string  `gorm:"column:first_name" faker:"first_name"`
+	LastName    string  `gorm:"column:last_name" faker:"last_name"`
+	Century     string  `gorm:"column:century" faker:"century"`
+	Date        string  `gorm:"column:date" faker:"date"`
 	CompanyID   string  `gorm:"column:company_code" faker:"-"`
 	Company     Company `gorm:"foreignKey:CompanyID;references:ID" faker:"-"`
 }

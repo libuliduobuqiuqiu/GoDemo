@@ -129,10 +129,10 @@ func condQueryRow() {
 }
 
 type APIUser struct {
-	ID        string `gorm:"primaryKey,column:id"`
+	ID        string `gorm:"primaryKey;column:id"`
 	UserName  string `gorm:"column:username"`
-	FirstName string `gorm:"first_name"`
-	LastName  string `gorm:"last_name"`
+	FirstName string `gorm:"column:first_name"`
+	LastName  string `gorm:"column:last_name"`
 }
 
 // advancedQueryRow 高级查询
