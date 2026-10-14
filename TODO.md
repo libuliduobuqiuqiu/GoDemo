@@ -6,8 +6,8 @@
 
 - 已完成：默认构建与测试基线、知识库导航、配置和固定路径整理、并发与测试专题，以及 gRPC Hello World 的本机通信验证。RPC chat 已明确标为未实现；“明确状态”这一待办已完成，聊天功能本身没有实现。
 - 数据库部分按当前约定完成静态验收：检查配置、sqlx SQL 拼接、GORM 模型关联、查询和事务代码；修正批量插入与公司关联示例中的明确逻辑错误，并加入不连接数据库的测试。`TestStorageRoundTrip` 保留作可选手动演示，未执行，不将实际读写或回滚结果标为已验证。
-- 下一步：整理 Gin 与代理，再逐篇复核旧笔记；无需为本阶段准备 MySQL 服务。
-- 本阶段验证：`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/gostorage/... ./pkg`、`go vet -tags=integration ./test/gostorage`。带标签的命令只编译手动演示。
+- Gin 基础路由、受控 HTTP 代理及隔离的旧表单、上传、外部 HTTP 处理器已做本机验证；SSH/终端默认关闭，真实设备交互仍未验证。基础、反射、pprof 以及 Beego/面试旧笔记已复核。Beego 聊天室尚无运行入口；Redis 问答只有知识笔记，没有仓库实践。当前清单下一项是 Beego 聊天室。无需为当前阶段准备 MySQL 服务。
+- 当前阶段验证：`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/goweb/gogin/... ./cmd`、Markdown 本地链接检查和 `git diff --check`。旧处理器测试无需外部服务；完整测试中的 Gin 代理用例需要本机临时端口，已在允许 loopback 的环境运行。带标签的全仓命令只编译手动演示。
 
 ## 优先级与执行顺序
 
@@ -21,10 +21,12 @@
 | 4 | P1 | RPC chat 状态 | 已标明未实现 |
 | 5 | P1 | sqlx、GORM 数据库示例 | 静态检查与无数据库测试已完成 |
 | 6 | P1 | GORM 笔记 | 已按静态验收范围整理 |
-| 7 | P1 | Gin 与代理示例 | 未整理 |
-| 8 | P2 | 基础旧笔记 | 待逐篇复核 |
-| 9 | P2 | 进阶旧笔记 | 待逐篇复核 |
-| 10 | P2 | 框架与面试旧笔记 | 待逐篇复核 |
+| 7 | P1 | Gin 与代理示例 | 基础路由、受控 HTTP 代理已验证；SSH/终端状态已明确 |
+| 8 | P2 | 基础旧笔记 | 六篇已复核并标注验证边界 |
+| 9 | P2 | 进阶旧笔记 | 反射与 pprof 已复核；真实负载采集未验证 |
+| 10 | P2 | 框架与面试旧笔记 | Beego 及五篇问答已复核；未实现的实践已标明 |
+| 11 | P2 | Gin 旧处理器与设备演示 | 旧处理器及内部调用路径已复核；真实设备会话未验收 |
+| 12 | P2 | Beego 聊天室运行示例 | 待补入口、修复连接流程并做本机验收 |
 
 ## P0：先消除环境依赖
 
@@ -37,13 +39,15 @@
 - [x] 为 [`internal/gorpc/chat`](internal/gorpc/chat/) 明确范围：补成可运行示例，或在目录和 RPC 索引中标注尚未实现。完成标准：入口状态与文档一致，不让读者误以为占位代码可直接运行。
 - [x] 梳理 [`internal/gostorage`](internal/gostorage/) 和 [`test/gostorage`](test/gostorage/) 中的 sqlx、GORM 示例：修正批量插入占位符与参数、空条件列表、公司关联字段和空公司列表处理；用无数据库测试检查 SQL 生成及模型映射，用 `go vet` 和带标签编译检查其余演示。完成标准：默认测试不连接数据库，静态检查可重复执行。真实数据库读写不在本阶段验收范围；[往返测试](test/gostorage/roundtrip_test.go)仅保留为可选手动演示，见[数据库说明](docs/advanced/go_database.md)。
 - [x] 复核 [GORM 笔记](docs/advanced/go_gorm.md) 的核心 API 与示例，把查询、事务和错误处理连接到仓库代码；写明版本、无数据库验证命令及未验证的运行行为，并同步[进阶索引](docs/advanced/README.md)。旧业务表、GORM Gen、实际事务回滚结果没有经过数据库验证。
-- [ ] 整理 [`internal/goweb/gogin`](internal/goweb/gogin/) 的启动入口与 [Gin 笔记](docs/framework/go_gin.md)，逐个列出依赖和可访问路由。先修复代理路由缺少处理函数、请求失败直接退出进程等问题；对任意目标代理、跳过 TLS 验证、WebSocket 来源和 SSH 主机密钥校验给出安全边界或移除不安全默认值。完成标准：至少一个基础路由可按文档运行，代理与终端功能的状态清楚且无未说明的不安全默认行为。
+- [x] 整理 [`internal/goweb/gogin`](internal/goweb/gogin/) 的启动入口与 [Gin 笔记](docs/framework/go_gin.md)。`go run . gin` 可运行基础路由；代理绑定处理函数，源站由 `--proxy-target` 允许，错误返回 HTTP 状态且使用标准 TLS 校验；服务默认仅监听本机。SSH/终端仅显式启用并要求 `known_hosts`，WebSocket 同源检查保留。完成标准中的基础路由、代理状态和默认安全边界已用本机测试验证。真实 SSH/设备交互未验证；旧 Gin 表单、上传和内部源码细节转入 P2 逐项复核。
 
 ## P2：复核旧笔记
 
-- [ ] 按[基础索引](docs/base/README.md)逐篇核对语言总览、泛型、文件、并发运行时、编译与 GC；补齐 [GC 笔记](docs/base/go_gc.md) 中的写屏障等未完成项。完成标准：每篇文章标注当前状态、适用 Go 版本、代码入口和验证依据；已复核后才改为“已整理并验证”。
-- [ ] 按[进阶索引](docs/advanced/README.md)复核反射与 pprof，并处理 [pprof 笔记](docs/advanced/go_pprof.md) 的遗留 TODO。完成标准同上。
-- [ ] 复核[框架索引](docs/framework/README.md)中的 Beego 笔记，以及[面试索引](docs/interview/README.md)里的问答；为 Redis 问答补充可靠的实践入口或明确只有知识笔记。完成标准：可从问题跳到对应专题或示例，缺少示例时如实标注。
+- [x] 按[基础索引](docs/base/README.md)逐篇核对语言总览、泛型、文件、并发运行时、编译与 GC；补齐 [GC 笔记](docs/base/go_gc.md) 的写屏障、回收流程和调优边界。六篇文章已标注状态、Go 1.25 适用范围、代码入口和验证方式；修正旧版循环变量、GOMAXPROCS 默认值与逃逸分析的绝对化说法。文件、泛型、分配示例增加结果断言。更深的调度器内部实现、特殊文件行为及真实工作负载的 GC 调优不在本轮验证范围。
+- [x] 按[进阶索引](docs/advanced/README.md)复核反射与 pprof，并处理 [pprof 笔记](docs/advanced/go_pprof.md) 的遗留 TODO。反射示例增加值修改及边界断言，pprof 使用显式输出路径并验证默认 mux 注册条件。真实工作负载的 CPU、内存分析和 HTTP 诊断服务运行未验收，见两篇笔记的验证范围。
+- [x] 复核[框架索引](docs/framework/README.md)中的 Beego 笔记，以及[面试索引](docs/interview/README.md)里的五篇问答。问题已连接到专题、代码或官方依据；Redis 明确只有知识笔记，无仓库实践。Beego 聊天室仅完成静态编译检查，运行缺口另列待办；真实 MySQL、Redis、网络和硬件行为没有被标作已验证。
+- [x] 复核 Gin 中未接入主入口的表单、上传和外部 HTTP 处理器及 Gin v1.9.1 内部调用路径。修正绑定失败后的重复响应、缺字段和超限状态；上传不再按客户端文件名写入工作目录或记录表单内容，外部响应设置超时并关闭响应体。隔离路由和代理上传端点已有本机断言；[Gin 文档](docs/framework/go_gin.md)标明哪些路由实际注册。SSH/终端在专用设备上的手动验收为可选项，本轮没有设备，不能宣称真实会话已验证。
+- [ ] 为 [Beego 聊天室](docs/framework/go_beego.md)补可控的服务器入口及生命周期，修复重名注册、连接退出、广播错误处理，增加本机 WebSocket 验收；在明确认证与来源策略前仅作为本机演示。此项是实现工作，与本轮笔记复核分开验收。
 
 ## 已完成的基础
 

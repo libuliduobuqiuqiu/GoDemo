@@ -3,7 +3,6 @@ package handlers
 import (
 	"godemo/internal/goweb/gogin/proxy/public"
 	"godemo/internal/goweb/gogin/proxy/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -16,11 +15,7 @@ import (
 
 func Terminal(ctx *gin.Context) {
 	// 升级为Websocket请求
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
+	upgrader := websocket.Upgrader{}
 
 	ws, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {

@@ -1,16 +1,16 @@
 package app
 
 import (
-	"fmt"
-	"log"
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type LoginForm struct {
 	User     string `form:"user" binding:"required"`
-	Password string `form:"pssword" binding:"required"`
+	Password string `form:"password" binding:"required"`
 }
 
 var secrets = gin.H{
@@ -24,8 +24,9 @@ func postJSON(c *gin.Context) {
 		Name string `json:"name"`
 		Age  string `json:"age"`
 	}
-	if err := c.BindJSON(&user); err != nil {
-		c.String(http.StatusUnauthorized, "err")
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		return
 	}
 	name := user.Name
 	age := user.Age
@@ -102,12 +103,14 @@ func formGroupInit(engine *gin.Engine) {
 	group := engine.Group("form-group")
 	group.POST("/login", func(c *gin.Context) {
 		var form LoginForm
-		if c.ShouldBind((&form)) == nil {
-			if form.User == "user" && form.Password == "password" {
-				c.JSON(200, gin.H{"status": "you are logged in "})
-			} else {
-				c.JSON(401, gin.H{"status": "unauthorized"})
-			}
+		if err := c.ShouldBind(&form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "user and password are required"})
+			return
+		}
+		if form.User == "user" && form.Password == "password" {
+			c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		}
 	})
 
@@ -127,44 +130,73 @@ func formGroupInit(engine *gin.Engine) {
 		page := c.DefaultQuery("page", "0")
 		name := c.PostForm("name")
 		message := c.PostForm("message")
-		fmt.Printf("id: %s, page: %s, name: %s, message: %s", id, page, name, message)
 		c.JSON(200, gin.H{
-			"code": 200,
-			"info": "success",
+			"code":    200,
+			"info":    "success",
+			"id":      id,
+			"page":    page,
+			"name":    name,
+			"message": message,
 		})
 	})
 
 	engine.MaxMultipartMemory = 8 << 20
 	group.POST("/upload", func(c *gin.Context) {
-		file, _ := c.FormFile("file")
-		log.Println(file.Filename)
-
-		dst := "./" + file.Filename
-		c.SaveUploadedFile(file, dst)
-		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded", file.Filename))
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadBytes)
+		file, err := c.FormFile("file")
+		if err != nil {
+			var tooLarge *http.MaxBytesError
+			if errors.As(err, &tooLarge) {
+				c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "upload exceeds 8 MiB"})
+			} else {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+			}
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"filename": file.Filename, "size": file.Size})
 	})
 
 	group.POST("/uploads", func(c *gin.Context) {
-		form, _ := c.MultipartForm()
-		files := form.File["upload[]"]
-
-		for _, file := range files {
-			log.Println(file.Filename)
-			dst := "./" + file.Filename
-			c.SaveUploadedFile(file, dst)
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadBytes)
+		form, err := c.MultipartForm()
+		if err != nil {
+			var tooLarge *http.MaxBytesError
+			if errors.As(err, &tooLarge) {
+				c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "upload exceeds 8 MiB"})
+			} else {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "multipart form is required"})
+			}
+			return
 		}
-		c.String(http.StatusOK, fmt.Sprintf("%d file uploaded", len(files)))
+		files := form.File["upload[]"]
+		if len(files) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "upload[] is required"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"count": len(files)})
 	})
 
 }
 
-func othersGroupInit(engine *gin.Engine) {
+func othersGroupInit(engine *gin.Engine, imageURL string, client *http.Client) {
+	if client == nil {
+		client = newLegacyHTTPClient()
+	}
 	group := engine.Group("others")
 	group.GET("/someDataFromReader", func(c *gin.Context) {
 		// 从指定地址获取图片
-		response, err := http.Get("https://raw.githubusercontent.com/gin-gonic/logo/master/color.png")
-
-		if err != nil || response.StatusCode != http.StatusOK {
+		request, err := http.NewRequestWithContext(c.Request.Context(), http.MethodGet, imageURL, nil)
+		if err != nil {
+			c.Status(http.StatusServiceUnavailable)
+			return
+		}
+		response, err := client.Do(request)
+		if err != nil {
+			c.Status(http.StatusServiceUnavailable)
+			return
+		}
+		defer response.Body.Close()
+		if response.StatusCode != http.StatusOK {
 			c.Status(http.StatusServiceUnavailable)
 			return
 		}
@@ -204,7 +236,6 @@ func othersGroupInit(engine *gin.Engine) {
 	authorized.GET("/secrets", func(c *gin.Context) {
 		// 获取用户，它是由BasicAuth中间设置的
 		user := c.MustGet(gin.AuthUserKey).(string)
-		fmt.Println(user)
 		if secret, ok := secrets[user]; ok {
 			c.JSON(http.StatusOK, gin.H{"user": user, "secret": secret})
 		} else {
@@ -214,17 +245,25 @@ func othersGroupInit(engine *gin.Engine) {
 
 }
 
-func Start() {
+func newLegacyHTTPClient() *http.Client {
+	return &http.Client{Timeout: 5 * time.Second}
+}
+
+func NewRouter(templatePath string) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 
 	r.Use(gin.Logger())
-	r.LoadHTMLGlob("../../web/templates/index.html")
+	r.LoadHTMLFiles(templatePath)
 	r.GET("/index", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "Main WebSite",
 		})
 	})
 	jsonGroupInit(r)
-	r.Run(":8999")
+	return r
+}
+
+func Start() error {
+	return NewRouter("web/templates/index.html").Run("127.0.0.1:8999")
 }

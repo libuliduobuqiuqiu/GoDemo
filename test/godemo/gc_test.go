@@ -6,5 +6,7 @@ import (
 )
 
 func TestUseAllocate(t *testing.T) {
-	godemo.UseAllocate()
+	if got := godemo.UseAllocate(); got != 496 {
+		t.Fatalf("allocation checksum = %d, want 496", got)
+	}
 }

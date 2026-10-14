@@ -1,12 +1,17 @@
 package routers
 
-import "github.com/gin-gonic/gin"
+import (
+	"godemo/internal/goweb/gogin/proxy/handlers"
 
-func init() {
-	registerFunc = append(registerFunc, RegisterProxyRouter)
-}
+	"github.com/gin-gonic/gin"
+)
 
-func RegisterProxyRouter(group *gin.RouterGroup) {
+func RegisterProxyRouter(group *gin.RouterGroup, allowedTargets []string) error {
+	handler, err := handlers.NewProxyHandler(allowedTargets)
+	if err != nil {
+		return err
+	}
 	proxyGroup := group.Group("proxy")
-	proxyGroup.Any("")
+	proxyGroup.Any("", handler)
+	return nil
 }

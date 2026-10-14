@@ -9,7 +9,9 @@ import (
 )
 
 func TestGinStart(t *testing.T) {
-	app.Start()
+	if err := app.NewRouter("../../web/templates/index.html").Run("127.0.0.1:8999"); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestCommitHttpReq(t *testing.T) {

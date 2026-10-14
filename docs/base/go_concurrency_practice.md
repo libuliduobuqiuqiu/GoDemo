@@ -2,7 +2,7 @@
 
 > 状态：已整理并验证；验证环境：Go 1.25。对应代码与测试分别在 [`gochannel`](../../internal/goconcurrency/gochannel/channel_select.go)、[`gocontext`](../../internal/goconcurrency/gocontext/timerctx_demo.go)、[`gosync`](../../internal/goconcurrency/gosync/cond_demo.go) 中。
 
-这篇记录三个常见问题：等待多个事件、让任务在取消时退出、让多个等待者在条件满足后继续运行。更完整的运行时和并发笔记见[并发原始笔记](go_concurrency.md)。
+这篇记录三个常见问题：等待多个事件、让任务在取消时退出、让多个等待者在条件满足后继续运行。运行时和并发概览见[并发与运行时](go_concurrency.md)。
 
 ## select：等待多个事件
 

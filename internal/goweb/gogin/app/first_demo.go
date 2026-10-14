@@ -36,8 +36,9 @@ func Graceful_new() {
 		}
 	}()
 
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
+	defer signal.Stop(quit)
 	<-quit
 	log.Println("Shutdonw Server...")
 

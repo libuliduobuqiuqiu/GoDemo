@@ -1,87 +1,29 @@
+# MySQL 问答
 
-## 索引
+状态：按 MySQL 8.4 官方文档复核概念；本仓库仅完成 sqlx/GORM 静态检查，未用真实 MySQL 验证查询计划或事务行为。实践入口：[数据库静态验收](../advanced/go_database.md)、[GORM 笔记](../advanced/go_gorm.md)。
 
-索引使用b+树算法？
+## 索引与查询计划
 
-索引类型：
-- 唯一索引 UNIQUE INDEX
-- 普通索引 NORMAL INDEX
-- 主键索引 PRIMARY INDEX
-- 全文索引 FULLTEXT INDEX
-- 联合索引
+**InnoDB 索引一定是 B+ 树吗？** 常规 InnoDB 聚簇和二级索引是 B-tree 类结构；全文和空间索引另有实现，不能把所有索引概括为一种。聚簇索引保存行数据，二级索引记录包含主键列，可通过主键定位行。见 [InnoDB 索引文档](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html)。
 
-联合索引的最左匹配原则?
-聚簇索引和非聚簇索引的区别？
-explain分析是否命中索引？
-不会命中索引：
-1. 索引设计不合理：bool字段做索引，sql选择器不命中索引；
-2. where 不等于、对null的判断；
-3. 模糊查询%like，需要回表的查询结果集过大；
+**联合索引的“最左匹配”怎么用？** 先看索引列顺序、筛选条件、排序及覆盖需求；范围条件、函数/表达式和优化器选择都可能改变可用部分。不要只凭口号推断，针对具体 SQL 使用 `EXPLAIN`。
 
-## 事务
-ACID：
-- Atomicity: 原子性，事务是一个原子操作单元，对数据的修改要么全部执行，要么全部不执行；
-- Consistency：一致性：事务开始前和结束后，数据库的完整性约束没有破坏；
-- Isolation：隔离性，允许多个事务同个数据进行读写和修改的能力，但是隔离性可以防止多个事务之间交叉执行导致数据的不一致
-- Duration：持久性，事务操作之后，对数据的操作是永久的
+**哪些条件“必然不走索引”？** 旧笔记把 `!=`、`IS NULL`、低选择性列和前导通配 `LIKE` 一律列为不命中，结论过强。优化器会按统计信息、代价和索引类型选路径。前导通配通常难以利用普通 B-tree 前缀查找；实际计划仍以目标数据上的 `EXPLAIN`/`EXPLAIN ANALYZE` 为准。
 
-事务隔离性区分的四个级别：
-- 读未提交：脏读
-- 读已提交：避免脏堵、出现不可重复度
-- 可重复读：避免不可重复读、出现幻读（可通过MVCC版本控制解决幻读）
-- 串行
+**`EXPLAIN` 看什么？** 先看访问方式、`possible_keys`、`key`、估计行数和过滤比例；`key` 是选择的索引，`possible_keys` 是候选。估计值不等于实际行数。MySQL 8.4 的默认格式可配置，不宜把旧版表格列当作唯一输出格式。见 [EXPLAIN 文档](https://dev.mysql.com/doc/refman/8.4/en/explain.html)。
 
-## 架构
+## 事务与存储
 
-高可用方案：
-- 主从复制方案
-- MMM/MHA高可用方案
-- Heartbeat/SAN高可用方案
-- Heartbeat/DRBD高可用方案
+**ACID 是什么？** 原子性、一致性、隔离性、持久性。一致性指数据库约束及应用不变量在事务前后得到维护，不能由隔离级别单独保证。持久性还取决于存储及刷盘配置。
 
-## 基础
+**四种隔离级别和幻读？** SQL 常见级别为读未提交、读已提交、可重复读、串行化。InnoDB 默认可重复读；一致性读、锁定读及范围锁的行为不同，不能简单说“可重复读一定产生/一定消除幻读”。需要结合 SQL 语句、事务时间线和 [InnoDB 隔离级别文档](https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html)分析。仓库的事务示例见[数据库说明](../advanced/go_database.md)，但真实回滚未验收。
 
-mysql的utf8和utf8mb4有什么区别？
-utf8最大字符长度为3字节，遇到4字节的宽字符(Emoji)就会插入异常
+**MVCC、redo、undo、binlog 各负责什么？** MVCC 借助版本与读视图实现一致性读；undo 保存事务回滚及旧版本所需信息；redo 是 InnoDB 恢复已提交修改的重要日志；binlog 是 MySQL 服务器层的变更日志，常用于复制与时间点恢复。它们不是同一种“事务日志”。此处是概念入口，具体故障恢复需结合配置和官方手册验证。
 
-乐观锁和悲观锁
-MVCC数据库并发控制
-MVCC、Redolog、Undolog、Binlog有什么区别？
+**`utf8` 与 `utf8mb4`？** MySQL 的 `utf8` 是已弃用的 `utf8mb3` 别名，最多编码 3 字节字符；`utf8mb4` 支持 4 字节字符。新表应明确选择字符集和排序规则。见 [MySQL utf8mb3 文档](https://dev.mysql.com/doc/refman/8.4/en/charset-unicode-utf8mb3.html)。
 
-## 性能
+## 架构问题的边界
 
-explain命令
+主从复制、MHA/MMM、共享存储等是不同年代和场景的高可用方案，不能作为当前项目推荐架构。本仓库没有部署、故障切换或恢复演练；选择方案前需明确 MySQL 版本、RPO/RTO、读写模型和运维能力。
 
-+----+-------------+-----------+------------+-------+---------------+---------+---------+-------+------+----------+-------+
-| id | select_type | table     | partitions | type  | possible_keys | key     | key_len | ref   | rows | filtered | Extra |
-+----+-------------+-----------+------------+-------+---------------+---------+---------+-------+------+----------+-------+
-|  1 | SIMPLE      | syn_group | NULL       | const | PRIMARY       | PRIMARY | 192     | const |    1 |   100.00 | NULL  |
-+----+-------------+-----------+------------+-------+---------------+---------+---------+-------+------+----------+-------+
-
-select_type(查询的类型)
-- SIMPLE （简单使用SELECT，不使用UNION或子查询）
-- PRIMARY（查询中包含任何复杂的子部份，最外层的select被成为PRIMARY）
-- UNION（UNION第二个或者后面Select）
-- DEPENDENT UNION
-- UNION RESULT（union的结果）
-- SUBQUERY（子查询中的第一个SELECT）
-- DEPENDENT SUBQUERY
-- DERIVED（派生表的SELECT FROM 子句查询）
-- UNCACHEABLE SUBQUERY
-
-type(访问类型,从上到下，性能从差到好)
-- ALL（全表查询）
-- index（只遍历索引树）
-- range（之检索给定范围的行）
-- ref（表的连接匹配条件）
-- eq_ref（多表连接使用唯一索引）
-- const、system（查询转化为常量，例如查询的主键在where列表中，system是查询的表中仅有一行的情况）
-- NULL
-
-possible_keys: 可能使用的索引，并不是真正被查询使用；
-key: 实际使用的索引
-key_len：使用的索引的最大长度
-ref：上述表的连接匹配条件
-rows: mysql根据表统计信息及索引选用情况，估算找到所需记录需要读取的行数；
-
-
+验证命令：`go test ./internal/gostorage/... ./test/gostorage` 只验证无需数据库的静态与模型行为；执行真实 `EXPLAIN` 和事务测试需按[数据库准备说明](../advanced/go_database.md)连接专用测试库。

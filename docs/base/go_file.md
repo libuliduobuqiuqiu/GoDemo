@@ -1,275 +1,32 @@
-# File
+# 文件读写与路径
 
-## 文件操作
+> 状态：已整理并验证（普通文件路径）；验证环境：Go 1.25.5、Linux。代码入口：[文件操作实现](../../internal/golib/osdemo/file_operation.go)、[临时目录测试](../../test/golib/filedemo_test.go)、[复制测试](../../test/golib/filecopy_test.go)。
 
-> Go中文件操作的基础类型是[]byte，字节切片；
+## 打开与读取
 
-### 文件打开
+`os.Open(path)` 以只读方式打开文件；需要指定模式时用 `os.OpenFile(path, flags, perm)`。创建文件时 `perm` 还会受到进程 umask 影响；打开现有文件时它不是修改权限的手段。持有 `*os.File` 后要关闭，通常在成功打开后立即 `defer f.Close()`。
 
-> Go内置的os包，主要通过Open和OpenFile方法对文件进行操作；(Open方法实际上也是调用OpenFile，OpenFile能做到更加精细的控制，以不同的模式打开文件)
+小文件可用 `os.ReadFile` 一次读入；大文件或流式处理用 `io.Reader`、`bufio` 或 `io.Copy`，避免一次占用与文件大小相同的内存。`Read` 返回的 `n` 才是本次有效字节数，即使用了更大的缓冲区，也只能访问 `buf[:n]`。仓库的 `readFileData` 已按此规则修正，并向调用方传播读取错误；[短文件和空文件测试](../../internal/golib/osdemo/file_operation_test.go)检查了有效字节范围。
 
-#### 普通Open打开文件
+## 写入与复制
 
-```go
-file, err := os.Open(filePath)
- if err != nil {
-  return err
- }
+`os.WriteFile(path, data, perm)` 会创建文件，若文件已存在则截断内容；需要追加时用 `os.O_APPEND|os.O_CREATE|os.O_WRONLY`。`os.O_TRUNC` 与追加语义相冲突，不要在同一个示例中混用。打开后的文件可用 `Write` 或 `io.WriteString` 写入，写完要检查错误并关闭文件。
 
+仓库有三种复制函数：
+
+| 函数 | 行为 | 入口 |
+| --- | --- | --- |
+| `SimpleCopyFile` | 读入全部字节，再覆盖目标 | [实现](../../internal/golib/osdemo/file_operation.go) |
+| `AdvancedCopyFile` | 用 `ReadFrom` 复制并追加到目标 | [追加断言](../../test/golib/filecopy_test.go) |
+| `IOCopyFile` | 用 `io.Copy` 复制并覆盖目标 | [复制断言](../../test/golib/filecopy_test.go) |
+
+`io.Copy` 优先利用源或目标支持的优化接口，具体调用路径由实现决定；业务代码应依赖“复制字节并返回数量/错误”的公开语义。创建多个文件时可用 `filepath.Join` 组合路径，不要手写平台分隔符。`os.Remove` 删除单个文件或空目录；`os.RemoveAll` 递归删除，务必限定目标路径。
+
+## 验证与边界
+
+```bash
+go test ./test/golib -run '^(TestFileOperations|TestCopyFileInTempDir|TestAdvancedCopyAppends)$'
+go test ./internal/golib/osdemo -run '^TestReadFileDataUsesOnlyReadBytes$'
 ```
 
-> Open默认只读模式打开文件
-
-#### OpenFile打开文件
-
-```go
-file, err := os.OpenFile(filePath, os.O_WRONLY, 0666)
- if err != nil {
-  return err
- }
-```
-
-> OpenFile函数可以控制以什么方式打开文件，上述代码是只写模式，所以无法读取到文件里面的内容；
-
-具体控制的细节:
-
-```
-const (
-   // 只读，只写，读写 三种必须指定一个
-   O_RDONLY int = syscall.O_RDONLY // 以只读的模式打开文件
-   O_WRONLY int = syscall.O_WRONLY // 以只写的模式打开文件
-   O_RDWR   int = syscall.O_RDWR   // 以读写的模式打开文件
-   // 剩余的值用于控制行为
-   O_APPEND int = syscall.O_APPEND // 当写入文件时，将数据添加到文件末尾
-   O_CREATE int = syscall.O_CREAT  // 如果文件不存在则创建文件
-   O_EXCL   int = syscall.O_EXCL   // 与O_CREATE一起使用, 文件必须不存在
-   O_SYNC   int = syscall.O_SYNC   // 以同步IO的方式打开文件
-   O_TRUNC  int = syscall.O_TRUNC  // 当打开的时候截断可写的文件（清空文件）
-)
-```
-
-### 文件读取
-
-> Go内置的os提供了ReadFile直接读取文件内容；也能直接调用io.ReadAll方法直接读取打开的文件；
-同样也可以参考ReadFile的源码，动态扩容缓存，调用本身os.File类型提供的Read方法，将文件内容读取到切片；
-
-#### 直接调用os.ReadFile方法读取文件
-
-```go
-data, err := os.ReadFile(filePath)
- if err != nil {
-  return err
- }
-
-```
-
-> 传入对应文件路径，返回字节切片
-
-#### io.ReadAll读取打开的文件
-
-```go
-f, err := os.Open(filePath)
- if err != nil {
-  return err
- }
-
-  defer f.Close()
- data, err := io.ReadAll(f)
- if err != nil {
-  return errors.Wrap(err, "读取文件数据失败")
- }
-```
-
-#### 打开文件后，通过os.File的Read方法读取文件内容
->
-> 代码参考的是os.ReadFile源码
-
-```go
-func AdvancedReadFile() (data []byte, err error) {
- f, err := os.Open(filePath)
- if err != nil {
-  return
- }
-
- defer f.Close()
-
- data = make([]byte, 0, 512)
- for {
-  if len(data) >= cap(data) {
-   d := append(data[:cap(data)], 0)
-   data = d[:len(data)]
-  }
-  n, err := f.Read(data[len(data):cap(data)])
-  data = data[:len(data)+n]
-  if err != nil {
-   if err == io.EOF {
-    err = nil
-   }
-   return data, err
-  }
- }
-
-}
-```
-
-> 打开文件，创建一个缓存字节切片，通过无限循环不断读取文件数据，检查切片是否需要扩容，扩容后继续读取后续文件数据，最后读到文件关闭后，返回数据；
-
-### 文件写入
-
-> 可以直接通过OpenFile打开文件，模式需要设置只写模式或者读写模式，否则无法成功写入文件；os还有在前面基础上提供便捷函数,os.WriteFile和io.WriteString方式。
-
-#### 普通打开文件，通过os.File的Write和WriteString方法写入
-
-```go
-  file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND|os.O_TRUNC, 0666)
- if err != nil {
-  return err
- }
-
- fmt.Println("文件打开成功： ", file.Name())
- for i := 0; i < 5; i++ {
-  offset, err := file.WriteString("Hello,world\n")
-  if err != nil {
-   return errors.Wrap(err, "文件写入失败")
-  }
-  fmt.Println(offset)
- }
-```
-
-#### os.WriteFile直接将将数据写入文件
-
-```go
- err := os.WriteFile(path, []byte("hello,world\nhello,world\n"), 0666)
- if err != nil {
-  return err
- }
-```
-
-> WriteFile函数只是封装了打开文件的步骤，直接传入字符串即可
-
-#### io.WriteString写入数据
-
-```go
-  file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0666)
- if err != nil {
-  return err
- }
-
- fmt.Println("文件打开成功： ", file.Name())
- for i := 0; i < 6; i++ {
-  n, err := io.WriteString(file, "Hello,world\n")
-  if err != nil {
-   return errors.Wrap(err, "文件写入失败")
-  }
-  fmt.Println(n)
- }
- return nil
-
-```
-
-> io.WriteString 不仅可以写文件，只要实现了io.Writer接口的，都可以写入（net.Conn、os.Stdout、bytes.Buffer)，更加灵活；
-
-### 复制
-
-> 复制文件，本质上就是从某个文件读取内容，然后复制到目的文件，可以追加内容也可以覆盖内容，取决于打开文件的模式。以及os和io提供了封装的函数用于复制，本质上是实现了ReadFrom接口。
-
-#### 正常读取文件，然后写入到目的文件，完成复制操作
-
-```go
-func SimpleCopyFile() error {
- data, err := os.ReadFile(filePath)
- if err != nil {
-  return err
- }
-
- err = os.WriteFile(newFilePath, []byte(data), 0666)
- if err != nil {
-  return err
- }
-
- return nil
-}
-```
-
-> 注意这里使用的WriteFile方法，写入的文件是清空的，因为这个便捷函数直接默认Open打开的模式是O_TRUNC
-
-#### ReadFrom直接从源文件中读取内容
-
-```go
-func AdvancedCopyFile(originPath, targetPath string) error {
- origin, err := os.OpenFile(originPath, os.O_RDONLY, 0666)
- if err != nil {
-  return errors.Wrap(err, "打开源文件失败")
- }
- defer origin.Close()
-
- target, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
- if err != nil {
-  return errors.Wrap(err, "打开目的文件失败")
- }
- defer target.Close()
-
- n, err := target.ReadFrom(origin)
- if err != nil {
-  return errors.Wrap(err, "复制文件失败")
- }
- fmt.Println("文件复制成功", n)
- return nil
-}
-```
-
-> 这个示例代码中需要注意的是我是追加，所以复制的东西会一直追加到目标文件
-
-#### io.Copy复制
-
-```go
-func IOCopyFile(originPath, targetPath string) error {
- origin, err := os.OpenFile(originPath, os.O_RDONLY, 0666)
- if err != nil {
-  return errors.Wrap(err, "打开源文件失败")
- }
- defer origin.Close()
-
- target, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
- if err != nil {
-  return errors.Wrap(err, "打开目的文件失败")
- }
- defer target.Close()
-
- n, err := io.Copy(target, origin)
- if err != nil {
-  return errors.Wrap(err, "复制文件失败")
- }
- fmt.Println("文件复制成功", n)
- return nil
-}
-```
-
-> 可以对比和上面ReadFrom的代码，基本上相似的逻辑，只是在复制部分有点区别；阅读io的源码可知，io这部分判断是否实现了WriteTo或者ReadFrom接口，如果有直接调用对象的方法，如果没有则通过第一部分读取类似的逻辑，for循环读取文件的所有内容，然后写入。这种写法可以更好的兼容不同的类型，而不是拘泥于os.File；
-
-### 删除
-
-> 删除很简单,直接用os的函数Remove和RemoveAll分别删除文件和目录；
-
-```go
-func DeleteFile(path string) error {
- if err := os.Remove(path); err != nil {
-  return err
- }
-
- return nil
-}
-
-func DeleteDir(path string) error {
- if err := os.RemoveAll(path); err != nil {
-  return err
- }
- return nil
-}
-```
-
-### 备注
-
-参考链接：
-> <https://golang.halfiisland.com/essential/senior/100.io.html>
-> <https://pkg.go.dev/os@go1.22.4>
+测试全部使用 `t.TempDir()`，无需固定本机路径。它们验证普通文件的读写、覆盖、追加和删除。`SimpleOpenFile`/`AdvancedOpenFile` 只演示一次 `Read`，不能当作读取整个大文件的函数；需要完整内容时使用 `os.ReadFile` 或循环读取。符号链接、特殊文件、文件权限及磁盘故障未逐项模拟。更多 API 语义见[`os` 包文档](https://pkg.go.dev/os)和[`io` 包文档](https://pkg.go.dev/io)。

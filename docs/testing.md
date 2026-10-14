@@ -29,6 +29,12 @@ go test -tags=integration -run '^$' ./...
 
 MySQL 部分按[无数据库静态检查](advanced/go_database.md)验收；默认测试会运行配置、SQL 参数、GORM 映射和 `DryRun` 检查。无需准备 MySQL 服务。真实数据库往返只保留为可选的手动演示，未在当前阶段运行。
 
+Gin 基础路由及 HTTP 代理的启动命令、允许的目标和本机验证见[Gin 路由与代理](framework/go_gin.md)。旧表单、上传和外部 HTTP 处理器在隔离路由中用内存请求验证；它们未接入 `go run . gin`。代理测试使用 `httptest` 在本机监听临时端口；若运行环境禁止监听本机端口，需在允许 loopback 监听的环境执行该包测试。SSH/终端默认不注册，手动启用需要 `GO_DEMO_SSH_KNOWN_HOSTS` 指向已核对主机密钥的文件；真实设备会话本轮未验收。
+
+[pprof 与 trace 说明](advanced/go_pprof.md)列出显式输出路径和诊断端点的注册条件。默认测试只验证 trace 临时文件与 HTTP mux 行为，不启动诊断端口；手动 CPU profile 演示使用 `integration` 标签和临时目录。
+
+[Beego 聊天室](framework/go_beego.md)目前只有路由和客户端包，仓库没有服务器启动入口；`go build ./internal/goweb/gowebsockets/chat` 仅做静态编译，不能作为连接或广播验收。面试问答中的 Redis 内容暂无仓库实践代码。
+
 若自行运行手动演示，请指定包和测试名称。例如，在准备好[专用 MySQL 测试数据库](advanced/go_database.md)及配置后：
 
 ```bash
@@ -40,7 +46,7 @@ go test -tags=integration -run '^TestStorageRoundTrip$' -v ./test/gostorage
 | 位置 | 运行前提 |
 | --- | --- |
 | `test/gostorage`、`test/gotool/ssh_test.go` | 手动运行时设置 `GO_DEMO_CONFIG` 并准备相应的数据库或 SSH 设备；数据库静态检查见[sqlx 与 GORM 静态检查](advanced/go_database.md) |
-| `test/gogin`、`test/concurrency/chat`、`test/golib/httpdemo_test.go` | 相应的本地服务或设备；部分用例会启动服务并持续运行 |
+| `test/gogin`、`test/concurrency/chat`、`test/golib/httpdemo_test.go` | 相应的本地服务或设备；部分用例会启动服务并持续运行。Gin 自动验证位于 `internal/goweb/gogin` |
 | `test/golib/osdemo_test.go`、`test/goothers`、`test/gotool` 中的手动文件演示 | 按具体用例准备输入；部分用例会写入或删除文件。归档用例通过 `GO_DEMO_ARCHIVE_SOURCE_DIR`、`GO_DEMO_ARCHIVE_TGZ`、`GO_DEMO_ARCHIVE_ZIP` 指定输入，输出位于临时目录 |
 | `test/concurrency/channel_test.go`、`test/concurrency/context_test.go`、`test/concurrency/sync_test.go` | 文件中仍有较长时间运行的观察性演示；快速、可断言的并发测试位于 `internal/goconcurrency/` |
 | `test/golib/rate_test.go`、`test/pkg/traceroute_test.go` | 分别需要较长时间等待、特定网络环境 |

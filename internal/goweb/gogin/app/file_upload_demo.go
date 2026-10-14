@@ -1,82 +1,63 @@
 package app
 
 import (
-	"fmt"
+	"errors"
 	"io"
-	"os"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func StartFileUploadServer() {
+const maxUploadBytes = 8 << 20
+
+// StartFileUploadServer runs the isolated upload example on localhost.
+func StartFileUploadServer() error {
 	r := gin.Default()
 	r.POST("/upload", UploadFile)
-
-	r.Run(":8090")
+	return r.Run("127.0.0.1:8090")
 }
 
+// UploadFile validates a multipart upload without writing client data to disk.
 func UploadFile(c *gin.Context) {
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		HandleErrResponse(c, err)
-		return
-	}
-
-	fmt.Println(string(body))
-
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadBytes)
 	file, err := c.FormFile("file")
 	if err != nil {
-		HandleErrResponse(c, err)
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "upload exceeds 8 MiB"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+		}
+		return
+	}
+	if errmsg := CheckParam(c.PostForm("username"), c.PostForm("password"), c.PostForm("address")); errmsg != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errmsg})
 		return
 	}
 
-	uploadFile, err := file.Open()
+	input, err := file.Open()
 	if err != nil {
 		HandleErrResponse(c, err)
 		return
 	}
-
-	defer uploadFile.Close()
-
-	fileContent, err := io.ReadAll(uploadFile)
+	defer input.Close()
+	bytesRead, err := io.Copy(io.Discard, input)
 	if err != nil {
 		HandleErrResponse(c, err)
 		return
 	}
-
-	if err := os.WriteFile("tmpFile", fileContent, 0644); err != nil {
-		HandleErrResponse(c, err)
-		return
-	}
-
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-	address := c.PostForm("address")
-
-	fmt.Println(username, password, address)
-	errmsg := CheckParam(username, password, address)
-	if errmsg != "" {
-		HandleErrResponse(c, fmt.Errorf("%s", errmsg))
-		return
-	}
-
-	HandleSuccessResponse(c, struct{}{})
-	return
+	c.JSON(http.StatusOK, gin.H{"filename": file.Filename, "size": bytesRead})
 }
 
 func CheckParam(username, password, address string) (errmsg string) {
-
 	if username == "" {
 		errmsg += "username 不能为空;"
 	}
-
 	if password == "" {
 		errmsg += "password 不能为空;"
 	}
-
 	if address == "" {
 		errmsg += "address 不能为空;"
 	}
-
 	return
 }

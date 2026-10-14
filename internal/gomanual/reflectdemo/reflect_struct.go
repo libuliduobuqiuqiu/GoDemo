@@ -1,7 +1,6 @@
 package reflectdemo
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 )
@@ -18,47 +17,34 @@ func (p PersonModel) Talk(msg string) string {
 }
 
 func handleStruct(i interface{}) error {
-
 	rType := reflect.TypeOf(i)
-	if rType.Kind() == reflect.Pointer {
-		s := rType.Elem()
-		if s.Kind() == reflect.Struct {
-			// 输出结构体字段
-			for i := 0; i < s.NumField(); i++ {
-				field := s.Field(i)
-				// 打印基础信息
-				fmt.Println(field.Name, field.Type, field.Tag)
-				// 打印标签
-				fmt.Println(field.Tag.Get("json"))
-			}
+	if rType == nil || rType.Kind() != reflect.Pointer || reflect.ValueOf(i).IsNil() || rType.Elem().Kind() != reflect.Struct {
+		return fmt.Errorf("expected a non-nil pointer to struct, got %T", i)
+	}
+	s := rType.Elem()
+	for n := 0; n < s.NumField(); n++ {
+		field := s.Field(n)
+		fmt.Println(field.Name, field.Type, field.Tag)
+		fmt.Println(field.Tag.Get("json"))
+	}
 
-			// 修改年龄
-			rValue := reflect.ValueOf(i).Elem()
-
-			method := rValue.MethodByName("Talk")
-			msg := reflect.ValueOf("hello,world")
-			resValues := method.Call([]reflect.Value{msg})
-			for _, v := range resValues {
-				fmt.Println(v)
-			}
-
-			age := rValue.FieldByName("Age")
-			if age.IsValid() && age.CanSet() {
-				tmpAge := age.Interface()
-				age.SetInt(int64(tmpAge.(int) + 1))
-
-			}
-
-			// 修改地址
-			address := rValue.FieldByName("Address")
-			if address.IsValid() && address.CanSet() {
-				tmpAddress := address.Interface()
-				address.SetString(tmpAddress.(string) + " Guangzhou city")
-			}
-
+	rValue := reflect.ValueOf(i).Elem()
+	method := rValue.MethodByName("Talk")
+	if method.IsValid() && method.Type().NumIn() == 1 && method.Type().In(0) == reflect.TypeOf("") {
+		for _, v := range method.Call([]reflect.Value{reflect.ValueOf("hello,world")}) {
+			fmt.Println(v)
 		}
 	}
-	return errors.New("not support reflect type: " + rType.Kind().String())
+
+	age := rValue.FieldByName("Age")
+	if age.IsValid() && age.CanSet() && age.Kind() == reflect.Int {
+		age.SetInt(age.Int() + 1)
+	}
+	address := rValue.FieldByName("Address")
+	if address.IsValid() && address.CanSet() && address.Kind() == reflect.String {
+		address.SetString(address.String() + " Guangzhou city")
+	}
+	return nil
 }
 
 func BaseUseReflectStruct() {
@@ -69,6 +55,9 @@ func BaseUseReflectStruct() {
 		money:   33000,
 	}
 	fmt.Println(p)
-	handleStruct(&p)
+	if err := handleStruct(&p); err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Println(p)
 }

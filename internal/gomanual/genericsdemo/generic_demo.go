@@ -26,7 +26,7 @@ func (m *Man[T]) GetName() string {
 }
 
 func NewSuccessItem[itemClass any](code int, message string, item itemClass) {
-	tmpJson := successItemJson[itemClass]{0, message, item}
+	tmpJson := successItemJson[itemClass]{code, message, item}
 	tmpStr, _ := json.Marshal(tmpJson)
 
 	fmt.Println(string(tmpStr))

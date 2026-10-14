@@ -9,29 +9,29 @@ type MyLonger interface {
 	GetName() string
 }
 
-type SingedInt interface {
+type SignedInt interface {
 	int8 | int16 | int32 | int64
 }
 
-type UnSingedInt interface {
+type UnsignedInt interface {
 	uint8 | uint16 | uint32 | uint64
 }
 
 type Integer interface {
-	SingedInt | UnSingedInt
+	SignedInt | UnsignedInt
 }
 
 type MyNumber interface {
 	Integer
-	SingedInt
+	SignedInt
 }
 
 type MyInteger interface {
-	SingedInt
-	UnSingedInt
+	SignedInt
+	UnsignedInt
 }
 
-func SumIntOrFloats[K comparable, V Integer](m map[K]V) V {
+func SumIntegers[K comparable, V Integer](m map[K]V) V {
 	var s V
 	for _, v := range m {
 		s += v
@@ -39,7 +39,7 @@ func SumIntOrFloats[K comparable, V Integer](m map[K]V) V {
 	return s
 }
 
-func ExecSumIntOrFloat() {
+func ExecSumIntegers() {
 	ints := map[string]int64{
 		"first":  34,
 		"second": 12,
@@ -50,6 +50,6 @@ func ExecSumIntOrFloat() {
 		"second": 26,
 	}
 
-	fmt.Printf("Genric Sum: %v and %v \n", SumIntOrFloats[string, int64](ints),
-		SumIntOrFloats[string, uint64](uints))
+	fmt.Printf("Generic Sum: %v and %v \n", SumIntegers[string, int64](ints),
+		SumIntegers[string, uint64](uints))
 }

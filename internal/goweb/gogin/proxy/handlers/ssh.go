@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"net/http"
-
 	"godemo/internal/goweb/gogin/proxy/public"
 	"godemo/internal/goweb/gogin/proxy/service"
 
@@ -12,7 +10,6 @@ import (
 func ExecSshCommand(ctx *gin.Context) {
 	var (
 		params public.ProxySshParams
-		resp   public.ProxyResponse
 		cmdRes map[string]string
 	)
 
@@ -25,8 +22,7 @@ func ExecSshCommand(ctx *gin.Context) {
 	cmdRes, err := sshService.ExecCommand(params)
 	if err != nil {
 		public.HandleErrJson(ctx, err)
+		return
 	}
-
-	resp.Data = cmdRes
-	ctx.JSON(http.StatusOK, resp)
+	public.HandleSuccessJson(ctx, cmdRes)
 }

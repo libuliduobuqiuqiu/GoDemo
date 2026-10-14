@@ -17,15 +17,20 @@ func fib(n int) int {
 	return fib(n-1) + fib(n-2)
 }
 
-func AnalysisFibByPprof() error {
-	// f, err := os.OpenFile("cpu.profile", os.O_CREATE|os.O_RDWR, 0666)
-	f, err := os.Create("cpu.profile")
+func AnalysisFibByPprof(path string) (err error) {
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if closeErr := f.Close(); err == nil {
+			err = closeErr
+		}
+	}()
 
-	pprof.StartCPUProfile(f)
+	if err := pprof.StartCPUProfile(f); err != nil {
+		return err
+	}
 	defer pprof.StopCPUProfile()
 
 	var n = 10
@@ -36,15 +41,19 @@ func AnalysisFibByPprof() error {
 	return nil
 }
 
-func AnalysisFibByTrace() error {
-
-	f, err := os.Create("cpu.trace")
+func AnalysisFibByTrace(path string) (err error) {
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
-
-	defer f.Close()
-	trace.Start(f)
+	defer func() {
+		if closeErr := f.Close(); err == nil {
+			err = closeErr
+		}
+	}()
+	if err := trace.Start(f); err != nil {
+		return err
+	}
 	defer trace.Stop()
 
 	var n = 10

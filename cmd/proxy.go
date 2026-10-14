@@ -11,32 +11,34 @@ import (
 )
 
 var (
-	address string
-	port    int
-	isDebug bool
+	address      string
+	port         int
+	isDebug      bool
+	proxyTargets []string
+	enableSSH    bool
 )
 
 // proxyCmd represents the proxy command
 var proxyCmd = &cobra.Command{
 	Use:   "proxy",
-	Short: "A multi-protocol proxy supporting HTTP and SSH, including interactive SSH sessions.",
-	Long: `This is a powerful and flexible proxy server that supports:
-  - HTTP Proxy: Forwarding HTTP requests with logging and authentication support.
-  - SSH Proxy: Relaying SSH connections securely.
-  - Interactive SSH Sessions: Providing real-time SSH session forwarding with enhanced control.
-It is designed for developers and sysadmins who need a robust solution for handling HTTP and SSH traffic efficiently.`,
+	Short: "Run local HTTP proxy and optional SSH demos.",
+	Long: `Run the local Gin proxy demo. HTTP targets must be explicitly allowed with
+--proxy-target. SSH command and terminal routes require --enable-ssh and a
+GO_DEMO_SSH_KNOWN_HOSTS file. This demo has no client authentication.`,
 
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if isDebug {
 			gin.SetMode(gin.DebugMode)
 		}
-		routers.StartProxyService(address, port)
+		return routers.StartProxyService(address, port, proxyTargets, enableSSH)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(proxyCmd)
 	proxyCmd.Flags().IntVarP(&port, "port", "p", 8090, "Port to run the server on.")
-	proxyCmd.Flags().StringVarP(&address, "address", "a", "0.0.0.0", "Server address.")
+	proxyCmd.Flags().StringVarP(&address, "address", "a", "127.0.0.1", "Server address.")
 	proxyCmd.Flags().BoolVarP(&isDebug, "debug", "d", false, "Run the server debug mode.")
+	proxyCmd.Flags().StringArrayVar(&proxyTargets, "proxy-target", nil, "Allowed HTTP or HTTPS origin; repeat for more targets.")
+	proxyCmd.Flags().BoolVar(&enableSSH, "enable-ssh", false, "Enable SSH command and terminal routes; requires GO_DEMO_SSH_KNOWN_HOSTS.")
 }

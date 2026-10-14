@@ -87,3 +87,40 @@ git diff --check
 - 修正旧 sqlx 批量插入的占位符数量和参数展开方式，移除返回切片的无效 `driver.Valuer` 实现；空名称列表直接返回，`sqlx.In` 错误不再被忽略。修正公司关联示例中混用 `Code` 与 `ID`、空公司列表越界及查询错误未处理的问题。
 - 增加无需数据库的批量插入参数测试、GORM schema 关联测试、`DryRun` 查询和更新 SQL 测试。验证命令：`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/gostorage/... ./pkg`、`go vet -tags=integration ./test/gostorage`、`git diff --check`。
 - [数据库说明](advanced/go_database.md)、[GORM 笔记](advanced/go_gorm.md)、进阶索引与待办已改为“静态验收完成，真实数据库运行未经验证”。后续工作转到 Gin 与代理示例；不再把连接 MySQL 作为当前阶段的待办。
+
+## 第九阶段：Gin 基础路由与代理（2026-10-14）
+
+- 增加 `go run . gin` 的本机入口，修正模板相对路径，提供 `/index` 和 `/json-group/print-json` 的可复现步骤。代理入口增加 `/healthz`；原本没有处理函数的代理路由现在会转发到启动时 `--proxy-target` 明确允许的 HTTP(S) 源站。
+- 代理不再因请求错误调用 `log.Fatal`，格式错误、未允许的源站和上游故障分别给出 HTTP 错误；恢复标准 TLS 证书校验。默认监听地址改为 `127.0.0.1`。SSH/终端路由默认不注册；显式启用时要求 `GO_DEMO_SSH_KNOWN_HOSTS`，SSH 连接验证主机密钥，WebSocket 保留同源检查。SSH 响应错误分支不再继续写成功响应。
+- 增加无需外部设备的 Gin 路由、代理允许列表、真实本机 HTTP 转发、自签名 TLS 拒绝、SSH 启动前提及跨源 WebSocket 拒绝测试。同步更新[框架索引](framework/README.md)、[Gin 笔记](framework/go_gin.md)、[测试说明](testing.md)和[待办](../TODO.md)。
+- 验证：Go 1.25.5 下，`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/goweb/gogin/... ./cmd` 通过。代理测试需要本机临时端口；受限沙箱禁止监听时，测试在允许 loopback 的环境中运行。静态检查发现旧优雅退出示例使用无缓冲信号通道，已改为缓冲通道并停止信号通知。
+- 边界：未连接真实 SSH 设备；旧 Gin 表单、上传、外部 HTTP 处理器和内部源码笔记仍待逐项复核。当前命令无客户端身份认证，文档限定本机与可信隔离环境。
+
+## 第十阶段：基础旧笔记复核（2026-10-14）
+
+- 按[基础索引](base/README.md)重写语言总览、泛型、文件、并发运行时、编译与逃逸及 GC 六篇。每篇标注 Go 1.25 版本、状态、代码入口、验证命令与未覆盖范围。旧版循环变量闭包、固定 CPU 核心数的 `GOMAXPROCS` 默认值和“返回局部变量地址必然堆分配”等绝对化结论已校正；GC 的写屏障、回收流程与 `GOGC`/`GOMEMLIMIT` 边界已补齐。版本相关规则核对了 Go 语言规范、Go 1.22/1.25 发行说明、GC 指南和本机 Go 1.25.5 运行时源码。
+- 文件读取示例现在只转换本次实际读取的字节，正确处理空文件并传播读取错误；同包测试覆盖短文件和空文件，复制测试增加目标已有内容时的追加断言。泛型示例把仅支持整数的函数改为 `SumIntegers`，修正约束名称拼写并为结果增加断言。原来的分配示例可能被编译器消除，现改为有界分配、读取并校验结果。增加独立的逃逸示例，避免把编译器优化误写成语言保证。
+- 验证：Go 1.25.5 下，`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/godemo ./internal/golib/osdemo ./internal/gomanual/genericsdemo ./test/manual ./test/golib`、并发三个包 `-count=10` 均通过。`go build -gcflags=-m ./internal/godemo` 报告逃逸示例的返回地址变量移到堆、GC 示例的缓冲块逃逸到堆；这只是本机编译结果。Markdown 本地链接检查未发现失效路径。
+- 边界：特殊文件、符号链接、文件系统故障、跨平台编译诊断及真实工作负载下的 GC 性能没有验收。调度器内部队列和屏障实现只按 Go 1.25 源码解释，不作为语言 API 承诺。下一步按待办复核反射与 pprof。
+
+## 第十一阶段：反射与 pprof 旧笔记复核（2026-10-14）
+
+- 重写[反射笔记](advanced/go_reflect.md)，核对 `TypeOf`、`ValueOf`、`CanSet`、`CanInterface`、方法调用与 `DeepEqual` 的适用条件；原笔记中跨类型比较的 TODO 已给出结论。修正 `handleStruct` 成功后仍返回错误的问题，并检查无效输入与字段实际修改。
+- 重写[pprof 笔记](advanced/go_pprof.md)，解释 `net/http/pprof` 导入时只向默认 mux 注册处理器，回答原笔记遗留 TODO；默认 mux 与空自定义 mux 的响应差异已有测试。CPU 和 trace 演示改为显式输出路径，检查采集启动及文件关闭错误；手动 CPU 测试写临时目录并确认文件非空。进阶索引、[测试说明](testing.md)和[待办](../TODO.md)同步更新。
+- 验证：Go 1.25.5 下 `go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/gomanual/reflectdemo ./internal/gotool/pprofdemo ./test/manual ./test/gotool`、`go test -tags=integration ./test/gotool -run '^TestAnalysisFibProfile$' -v -timeout 20s` 和 `git diff --check` 通过；文档中的 `go test` profile 参数组合也已运行通过。
+- 边界：HTTP pprof 端点只验证了处理器注册，没有启动诊断服务；CPU 手动示例确认文件写入，但未对真实业务负载做性能解释。短测试生成的 CPU 样本可能不足；下一步复核 Beego 与面试问答。
+
+## 第十二阶段：Beego 与面试问答复核（2026-10-14）
+
+- 核对 Beego v2.1.6 依赖和聊天室路由、客户端、广播代码，重写[Beego 笔记](framework/go_beego.md)。原笔记中的“双向链表”不是仓库实现；聊天室没有调用 `web.Run` 的入口，故只标为静态复核。重名检查、连接退出及广播错误处理列为独立实现待办。
+- 重写 Go、MySQL、Redis、网络、系统五篇[面试问答](interview/README.md)。Go `hmap`/溢出桶描述不再代表 Go 1.25 的 map 实现；修正 nil 切片、map 比较和接口方法集等边界。MySQL 的索引与隔离级别说明按 MySQL 8.4 文档限定；Redis 的 RDB/AOF、复制和淘汰策略按官方文档校正，并明确仓库没有 Redis 实践代码。网络与系统问答接入本机 RPC、Gin、编译、GC 和 pprof 专题；未做抓包或硬件测量。
+- 同步更新[框架索引](framework/README.md)、[面试索引](interview/README.md)、[测试说明](testing.md)和[待办](../TODO.md)。验证：Go 1.25.5 下 `go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/goweb/gowebsockets/chat ./test/interview`、Markdown 本地链接检查及 `git diff --check` 均通过。
+- 边界：本阶段是笔记复核与静态编译；没有运行 Beego 聊天室、Redis、真实 MySQL 查询计划或事务，也没有网络抓包。下一步按待办处理 Gin 旧处理器；Beego 聊天室实现缺口保留为后续事项。
+
+## 第十三阶段：Gin 旧处理器与内部调用路径（2026-10-14）
+
+- 修正已注册 JSON 处理器在绑定失败后仍写成功响应的问题；隔离的登录表单修正 `password` 字段标签，并为缺字段、认证失败和成功分别返回 400、401、200。旧上传示例改为只读取或返回文件元信息，不使用客户端文件名写入当前目录；使用 `http.MaxBytesReader` 限制 8 MiB 请求体。代理的 `POST /netac/base/upload` 只解析 multipart，不记录字段内容，错误格式与超限分别返回 400、413。
+- 隔离的外部 HTTP 图片处理器改为接受调用方配置的 URL 与客户端，默认客户端有 5 秒超时；上游非 200 返回 503，成功和失败均关闭响应体。测试使用内存 HTTP 传输替身，未访问公网。原本记录表单内容及管理员用户名的打印已移除。
+- [Gin 笔记](framework/go_gin.md)增加已注册与隔离处理器的状态、Gin v1.9.1 的路由注册、`Engine.ServeHTTP`、中间件与绑定调用路径，并指出 `MaxMultipartMemory` 不是请求体上限。同步更新[框架索引](framework/README.md)、[测试说明](testing.md)和[待办](../TODO.md)。没有为设备验收或已知边界新增待办项。
+- 验证：Go 1.25.5 下 `go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/goweb/gogin/... ./cmd`、Markdown 本地链接检查及 `git diff --check` 通过。完整测试中的 Gin 代理用例需要 loopback 端口，在允许本机监听的环境执行；旧处理器测试不需要外部网络。
+- 边界：`formGroupInit`、`othersGroupInit` 和独立上传服务没有接入主入口；固定演示账号不应用于真实认证。SSH/终端仍需专用设备、凭据和人工交互，本轮没有执行真实会话。当前清单余项是 Beego 聊天室运行示例。

@@ -40,6 +40,8 @@ cd GoDemo
 ```bash
 go run . --help
 ```
+
+Gin 本机路由与代理的启动方式、路由和运行边界见[Gin 路由与代理](docs/framework/go_gin.md)。
 ### 执行测试
 在项目根目录执行默认测试，无需数据库、设备或私有配置：
 ```bash

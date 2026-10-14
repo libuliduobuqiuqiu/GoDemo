@@ -13,11 +13,12 @@ func readFileData(f *os.File) (data string, err error) {
 
 	buffer := make([]byte, 512)
 	count, err := f.Read(buffer)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return
 	}
+	err = nil
 	fmt.Println(count)
-	data = string(buffer)
+	data = string(buffer[:count])
 	fmt.Println(data)
 	return
 }
@@ -30,8 +31,8 @@ func SimpleOpenFile(filePath string) error {
 
 	defer file.Close()
 
-	readFileData(file)
-	return nil
+	_, err = readFileData(file)
+	return err
 }
 
 func AdvancedOpenFile(filePath string) error {
@@ -42,8 +43,8 @@ func AdvancedOpenFile(filePath string) error {
 
 	defer file.Close()
 
-	readFileData(file)
-	return nil
+	_, err = readFileData(file)
+	return err
 }
 
 func SimpleReadFile(filePath string) error {

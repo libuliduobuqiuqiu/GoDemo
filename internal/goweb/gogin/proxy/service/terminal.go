@@ -3,6 +3,7 @@ package service
 import (
 	"godemo/internal/goweb/gogin/proxy/public"
 	"io"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -77,13 +78,18 @@ func (t *TerminalService) BuildTerminal(params public.ProxyParams, ws *websocket
 }
 
 func newSshClient(address, username, password string) (client *ssh.Client, err error) {
+	hostKeyCallback, err := HostKeyCallback()
+	if err != nil {
+		return nil, err
+	}
 	clientConfig := ssh.ClientConfig{
 		User: username,
 		Auth: []ssh.AuthMethod{
 			ssh.Password(password),
 			setKeyboardInteractive(password),
 		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: hostKeyCallback,
+		Timeout:         10 * time.Second,
 	}
 
 	client, err = ssh.Dial("tcp", address, &clientConfig)

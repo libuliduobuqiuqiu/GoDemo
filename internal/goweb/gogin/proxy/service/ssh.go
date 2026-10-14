@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"godemo/internal/goweb/gogin/proxy/public"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -43,12 +44,17 @@ func (s *SshService) ExecCommand(params public.ProxySshParams) (cmdRes map[strin
 }
 
 func sshConnect(address, username, password string, port int, isKeyboardInteractive bool) (client *ssh.Client, err error) {
+	hostKeyCallback, err := HostKeyCallback()
+	if err != nil {
+		return nil, err
+	}
 	config := &ssh.ClientConfig{
 		User: username,
 		Auth: []ssh.AuthMethod{
 			ssh.Password(password),
 		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: hostKeyCallback,
+		Timeout:         10 * time.Second,
 	}
 
 	if isKeyboardInteractive {

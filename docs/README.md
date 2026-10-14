@@ -11,7 +11,7 @@
 
 ## 建议的阅读顺序
 
-1. [Go 基础提纲](base/go_manual.md)了解已有主题范围，再读[错误处理](base/go_error.md)与[并发控制实践](base/go_concurrency_practice.md)。
+1. [Go 基础总览](base/go_manual.md)了解已有主题范围，再读[错误处理](base/go_error.md)与[并发控制实践](base/go_concurrency_practice.md)。
 2. 用[测试笔记](advanced/go_testing.md)和[测试运行说明](testing.md)把概念与可运行样例对上。
 3. 按工作中遇到的问题查[文件操作](base/go_file.md)、[GORM](advanced/go_gorm.md)、[RPC](advanced/go_rpc.md)等专题。
 4. 面试目录用于复盘问题；遇到需要实践的知识，以专题笔记和代码为主。
