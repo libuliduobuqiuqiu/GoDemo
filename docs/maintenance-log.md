@@ -80,3 +80,10 @@ git diff --check
 - 增加[数据库准备与清理说明](advanced/go_database.md)，重写[GORM 笔记](advanced/go_gorm.md)的连接、模型、查询和事务部分，修正示例模型中的 GORM 字段标签。进阶索引与[待办](../TODO.md)同步区分“已写好最小路径”和“待真实数据库验证”。
 - 在 Go 1.25.0 下，`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...` 与 `git diff --check` 通过。当前环境没有运行 `TestStorageRoundTrip` 所需的专用 MySQL 数据库；带标签命令仅编译测试。实际连接、建表、读写、回滚和清理仍需按文档验收。
 - 后续按待办顺序处理 Gin 基础路由及代理行为，再逐篇复核旧笔记。已有 sqlx、GORM 演示中依赖预置业务表的部分仍属单独验证范围。
+
+## 第八阶段：MySQL 静态验收（2026-10-14）
+
+- 根据当前验收范围，不连接真实 MySQL。已检查配置/DSN、sqlx 查询与批量插入、GORM 字段和关联、查询及事务示例；`TestStorageRoundTrip` 保留为可选手动演示，实际数据库行为未验证。
+- 修正旧 sqlx 批量插入的占位符数量和参数展开方式，移除返回切片的无效 `driver.Valuer` 实现；空名称列表直接返回，`sqlx.In` 错误不再被忽略。修正公司关联示例中混用 `Code` 与 `ID`、空公司列表越界及查询错误未处理的问题。
+- 增加无需数据库的批量插入参数测试、GORM schema 关联测试、`DryRun` 查询和更新 SQL 测试。验证命令：`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/gostorage/... ./pkg`、`go vet -tags=integration ./test/gostorage`、`git diff --check`。
+- [数据库说明](advanced/go_database.md)、[GORM 笔记](advanced/go_gorm.md)、进阶索引与待办已改为“静态验收完成，真实数据库运行未经验证”。后续工作转到 Gin 与代理示例；不再把连接 MySQL 作为当前阶段的待办。

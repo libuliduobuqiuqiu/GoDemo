@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"godemo/pkg"
 	"log"
+	"strings"
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -204,19 +205,32 @@ func TransactionCommitDemo() (err error) {
 	return nil
 }
 
-// BatchInsertMusic Sqlx.In批量插入
-func BatchInsertMusic(musicList []interface{}) error {
-	fmt.Println(musicList...)
-
-	InsertSql, args, _ := sqlx.In(
-		"INSERT INTO music_music (music_author, music_name, music_album, music_time, music_type, music_lyrics, music_arranger) VALUES  (?), (?)",
-		musicList...) // 如果Music实现了Value方法，sqlx.In会通过调用Value()方法展开它
-
-	fmt.Println(InsertSql)
-	fmt.Println(args)
-
-	_, err := getDB().Exec(InsertSql, args...)
+// BatchInsertMusic builds one row of placeholders per Music value.
+func BatchInsertMusic(musicList []model.Music) error {
+	query, args, err := buildBatchInsertMusic(musicList)
+	if err != nil {
+		return err
+	}
+	_, err = getDB().Exec(query, args...)
 	return err
+}
+
+func buildBatchInsertMusic(musicList []model.Music) (string, []interface{}, error) {
+	if len(musicList) == 0 {
+		return "", nil, errors.New("music list is empty")
+	}
+
+	const prefix = "INSERT INTO music_music (music_author, music_name, music_album, music_time, music_type, music_lyrics, music_arranger) VALUES "
+	var placeholders strings.Builder
+	args := make([]interface{}, 0, len(musicList)*7)
+	for i, music := range musicList {
+		if i > 0 {
+			placeholders.WriteByte(',')
+		}
+		placeholders.WriteString("(?, ?, ?, ?, ?, ?, ?)")
+		args = append(args, music.Author, music.Name, music.Album, music.Time, music.MusicType, music.Lyrics, music.Arranger)
+	}
+	return prefix + placeholders.String(), args, nil
 }
 
 // BatchInsertMusicByNamed 通过NamedExec绑定字段查询
@@ -230,14 +244,21 @@ func BatchInsertMusicByNamed(musicList []*model.Music) error {
 
 // QueryByNames 通过Name查询Music
 func QueryByNames(musicNames []string) (musicList []model.Music, err error) {
-	sqlStr := "select * from music_music where music_name in (?)"
+	if len(musicNames) == 0 {
+		return []model.Music{}, nil
+	}
+	query, args, err := buildMusicNamesQuery(musicNames)
+	if err != nil {
+		return nil, err
+	}
 
-	query, args, _ := sqlx.In(sqlStr, musicNames)
-	fmt.Println(query)
+	db := getDB()
+	query = db.Rebind(query)
 
-	query = getDB().Rebind(query)
-	fmt.Println(query)
-
-	err = getDB().Select(&musicList, query, args...)
+	err = db.Select(&musicList, query, args...)
 	return
+}
+
+func buildMusicNamesQuery(musicNames []string) (string, []interface{}, error) {
+	return sqlx.In("select * from music_music where music_name in (?)", musicNames)
 }

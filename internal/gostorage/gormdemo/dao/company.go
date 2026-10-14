@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"fmt"
+	"errors"
 	"godemo/internal/gostorage/gormdemo"
 	"godemo/internal/gostorage/gormdemo/model"
 
@@ -30,25 +30,31 @@ func InnsertCompanyRows() error {
 	return nil
 }
 
-func SelectCompanyRows() {
+func SelectCompanyRows() error {
 	var codes []*model.Company
 	db := gormdemo.GetDB()
 
 	result := db.Model(&model.Company{}).Find(&codes)
-	fmt.Println(codes)
-	fmt.Println(result.Error, result.RowsAffected)
+	if result.Error != nil {
+		return result.Error
+	}
 
 	var users []*model.User
-	db.Model(&model.User{}).Find(&users)
+	if err := db.Model(&model.User{}).Find(&users).Error; err != nil {
+		return err
+	}
+	if len(users) == 0 {
+		return nil
+	}
+	if len(codes) == 0 {
+		return errors.New("cannot assign users: company table is empty")
+	}
 
 	for k, user := range users {
-		user.CompanyID = codes[k%len(codes)].Code
-
+		user.CompanyID = codes[k%len(codes)].ID
+		if err := db.Model(user).Update("company_code", user.CompanyID).Error; err != nil {
+			return err
+		}
 	}
-
-	for _, tmpUser := range users {
-		fmt.Println(tmpUser)
-		result = db.Model(&model.User{}).Where("id = ?", tmpUser.ID).Updates(tmpUser)
-		fmt.Println(result.Error, result.RowsAffected)
-	}
+	return nil
 }

@@ -9,7 +9,7 @@ type Company struct {
 	ID    string `gorm:"column:id" faker:"-"`
 	Code  string `gorm:"column:code" faker:"word"`
 	Name  string `gorm:"column:name" faker:"word"`
-	Users []User `gorm:"foreignKey: CompanyID"`
+	Users []User `gorm:"foreignKey:CompanyID;references:ID"`
 }
 
 func (c *Company) TableName() string {

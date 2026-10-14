@@ -2,16 +2,16 @@
 
 目标：让本仓库持续作为个人 Go 知识库使用。每个主题都应能从[知识库首页](docs/README.md)找到，说明结论、适用边界、对应代码和验证方式；需要外部服务的演示单独标明运行前提。完成一项后，更新相关主题索引、本文勾选状态和[整理记录](docs/maintenance-log.md)。文章格式见[收纳与写作约定](docs/knowledge-guide.md)。
 
-## 当前进度（2026-10-13）
+## 当前进度（2026-10-14）
 
 - 已完成：默认构建与测试基线、知识库导航、配置和固定路径整理、并发与测试专题，以及 gRPC Hello World 的本机通信验证。RPC chat 已明确标为未实现；“明确状态”这一待办已完成，聊天功能本身没有实现。
-- 进行中：已写好独立的 sqlx/GORM 数据库往返测试、专用数据库准备说明和 GORM 核心 API 笔记；`integration` 测试已编译，但尚未连接真实 MySQL 运行，因此数据库与 GORM 两项仍未验收。
-- 下一步：先在专用 MySQL 数据库运行 `TestStorageRoundTrip` 并修正问题，再同步数据库文章、GORM 索引和本待办的状态；之后处理 Gin 与代理，最后复核旧笔记。
-- 本阶段验证：Go 1.25.0 下 `go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...` 和 `git diff --check` 通过。带标签的命令只编译手动演示，不代表真实数据库或设备验证通过。
+- 数据库部分按当前约定完成静态验收：检查配置、sqlx SQL 拼接、GORM 模型关联、查询和事务代码；修正批量插入与公司关联示例中的明确逻辑错误，并加入不连接数据库的测试。`TestStorageRoundTrip` 保留作可选手动演示，未执行，不将实际读写或回滚结果标为已验证。
+- 下一步：整理 Gin 与代理，再逐篇复核旧笔记；无需为本阶段准备 MySQL 服务。
+- 本阶段验证：`go build ./...`、`go test -timeout 20s ./...`、`go test -tags=integration -run '^$' ./...`、`go vet ./internal/gostorage/... ./pkg`、`go vet -tags=integration ./test/gostorage`。带标签的命令只编译手动演示。
 
 ## 优先级与执行顺序
 
-排序依据：先消除会影响其他示例的配置和环境问题，再完成可独立验收的示例，最后复核旧笔记。同一优先级内按编号执行；涉及外部数据库的步骤以准备好测试环境为前提。`P0` 优先处理，`P1` 随后处理，`P2` 持续维护。
+排序依据：先消除会影响其他示例的配置和环境问题，再完成可独立验收的示例，最后复核旧笔记。同一优先级内按编号执行。数据库部分采用静态检查和无数据库测试作为本阶段验收标准。`P0` 优先处理，`P1` 随后处理，`P2` 持续维护。
 
 | 顺序 | 优先级 | 事项 | 当前状态 |
 | --- | --- | --- | --- |
@@ -19,8 +19,8 @@
 | 2 | P0 | 固定路径演示与 Makefile | 已完成 |
 | 3 | P1 | gRPC Hello World | 已完成并做过本机通信验证 |
 | 4 | P1 | RPC chat 状态 | 已标明未实现 |
-| 5 | P1 | sqlx、GORM 数据库示例 | 最小路径已写，待真实 MySQL 验证 |
-| 6 | P1 | GORM 笔记 | 核心 API 已复核，待真实 MySQL 验证 |
+| 5 | P1 | sqlx、GORM 数据库示例 | 静态检查与无数据库测试已完成 |
+| 6 | P1 | GORM 笔记 | 已按静态验收范围整理 |
 | 7 | P1 | Gin 与代理示例 | 未整理 |
 | 8 | P2 | 基础旧笔记 | 待逐篇复核 |
 | 9 | P2 | 进阶旧笔记 | 待逐篇复核 |
@@ -35,12 +35,8 @@
 
 - [x] 完成 [`internal/gorpc/helloworld`](internal/gorpc/helloworld/) 的最小服务端和客户端演示：客户端使用超时上下文、正确处理连接与 RPC 错误；[RPC 笔记](docs/advanced/go_rpc.md) 给出启动顺序和预期输出。完成标准：可在本机按文档复现，且默认测试无需启动服务。
 - [x] 为 [`internal/gorpc/chat`](internal/gorpc/chat/) 明确范围：补成可运行示例，或在目录和 RPC 索引中标注尚未实现。完成标准：入口状态与文档一致，不让读者误以为占位代码可直接运行。
-- [ ] 梳理 [`internal/gostorage`](internal/gostorage/) 和 [`test/gostorage`](test/gostorage/) 中的 sqlx、GORM 示例，明确最小数据库准备、启动和清理步骤；将真实数据库验证留在 `integration` 标签内。完成标准：默认 `go test ./...` 不连接数据库，按文档配置后能单独运行至少一个数据库示例。
-  - [x] 增加独立的 [`TestStorageRoundTrip`](test/gostorage/roundtrip_test.go) 和[数据库准备、清理说明](docs/advanced/go_database.md)；默认测试不连接数据库，带标签的演示已通过编译检查。
-  - [ ] 在专用 MySQL 8 数据库按文档实际运行往返测试，确认创建、读写、回滚和自动删表；记录结果并修正发现的问题。旧业务表演示不在这条最小验收路径内。
-- [ ] 复核 [GORM 笔记](docs/advanced/go_gorm.md) 的 API 与示例，把查询、事务和错误处理连接到仓库代码。完成标准：文章写明所用版本、可运行命令及外部条件，并在[进阶索引](docs/advanced/README.md)更新状态。
-  - [x] 已核对核心 API、修正模型字段标签，并写明版本、代码入口和运行条件。
-  - [ ] 结合真实数据库运行结果复核文章中的查询、更新和回滚示例，再将状态改为“已整理并验证”；旧业务表关联和 GORM Gen 仍需另行验证。
+- [x] 梳理 [`internal/gostorage`](internal/gostorage/) 和 [`test/gostorage`](test/gostorage/) 中的 sqlx、GORM 示例：修正批量插入占位符与参数、空条件列表、公司关联字段和空公司列表处理；用无数据库测试检查 SQL 生成及模型映射，用 `go vet` 和带标签编译检查其余演示。完成标准：默认测试不连接数据库，静态检查可重复执行。真实数据库读写不在本阶段验收范围；[往返测试](test/gostorage/roundtrip_test.go)仅保留为可选手动演示，见[数据库说明](docs/advanced/go_database.md)。
+- [x] 复核 [GORM 笔记](docs/advanced/go_gorm.md) 的核心 API 与示例，把查询、事务和错误处理连接到仓库代码；写明版本、无数据库验证命令及未验证的运行行为，并同步[进阶索引](docs/advanced/README.md)。旧业务表、GORM Gen、实际事务回滚结果没有经过数据库验证。
 - [ ] 整理 [`internal/goweb/gogin`](internal/goweb/gogin/) 的启动入口与 [Gin 笔记](docs/framework/go_gin.md)，逐个列出依赖和可访问路由。先修复代理路由缺少处理函数、请求失败直接退出进程等问题；对任意目标代理、跳过 TLS 验证、WebSocket 来源和 SSH 主机密钥校验给出安全边界或移除不安全默认值。完成标准：至少一个基础路由可按文档运行，代理与终端功能的状态清楚且无未说明的不安全默认行为。
 
 ## P2：复核旧笔记

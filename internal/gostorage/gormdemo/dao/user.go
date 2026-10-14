@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"errors"
 	"fmt"
 	"godemo/internal/gostorage/gormdemo"
 	"godemo/internal/gostorage/gormdemo/model"
@@ -146,6 +147,9 @@ func UpdateUserCompany() error {
 
 	for _, v := range companyList {
 		companyIds = append(companyIds, v.ID)
+	}
+	if len(userList) > 0 && len(companyIds) == 0 {
+		return errors.New("cannot assign users: company table is empty")
 	}
 
 	for _, user := range userList {
