@@ -42,6 +42,8 @@ go run . --help
 ```
 
 Gin 本机路由与代理的启动方式、路由和运行边界见[Gin 路由与代理](docs/framework/go_gin.md)。
+
+pprof 在线 CPU 采样示例：`go run ./cmd/pprof-demo`，持续计算接口和测试方法见[pprof 使用说明](internal/gotool/pprofdemo/README.md)。
 ### 执行测试
 在项目根目录执行默认测试，无需数据库、设备或私有配置：
 ```bash

@@ -1,10 +1,13 @@
 package app
 
 import (
+	"crypto/sha256"
 	"errors"
+	"godemo/internal/gotool/pprofdemo"
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,8 +45,13 @@ func jsonGroupInit(engine *gin.Engine) {
 
 	group := engine.Group("json-group")
 	group.GET("/print-json", func(c *gin.Context) {
+		var result [32]byte
+		for i := 0; i < 4096; i++ {
+			result = sha256.Sum256([]byte{})
+		}
 		c.JSON(200, gin.H{
-			"test": "2022-11-1",
+			"test":   "2022-11-1",
+			"result": result,
 		})
 	})
 
@@ -96,7 +104,6 @@ func jsonGroupInit(engine *gin.Engine) {
 		// userList := []string{"wangwu", "zhangsna", "foo"}
 		c.SecureJSON(http.StatusOK, address)
 	})
-
 }
 
 func formGroupInit(engine *gin.Engine) {
@@ -175,7 +182,6 @@ func formGroupInit(engine *gin.Engine) {
 		}
 		c.JSON(http.StatusOK, gin.H{"count": len(files)})
 	})
-
 }
 
 func othersGroupInit(engine *gin.Engine, imageURL string, client *http.Client) {
@@ -216,7 +222,6 @@ func othersGroupInit(engine *gin.Engine, imageURL string, client *http.Client) {
 	// xml
 	group.GET("/someXML", func(c *gin.Context) {
 		c.XML(http.StatusOK, gin.H{"message": "hey", "status": http.StatusOK})
-
 	})
 
 	// yaml
@@ -242,7 +247,6 @@ func othersGroupInit(engine *gin.Engine, imageURL string, client *http.Client) {
 			c.JSON(http.StatusOK, gin.H{"user": user, "secret": "No SECRET: ("})
 		}
 	})
-
 }
 
 func newLegacyHTTPClient() *http.Client {
@@ -250,9 +254,11 @@ func newLegacyHTTPClient() *http.Client {
 }
 
 func NewRouter(templatePath string) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 	r := gin.New()
 
+	pprof.Register(r)
+	r.GET("/work/cpu", gin.WrapF(pprofdemo.CPUHandler))
 	r.Use(gin.Logger())
 	r.LoadHTMLFiles(templatePath)
 	r.GET("/index", func(c *gin.Context) {
